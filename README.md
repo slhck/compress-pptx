@@ -19,6 +19,22 @@ This script runs under *nix systems and presumably also WSL.
 - ImageMagick's `convert`
 - `zip` and `unzip`
 
+Under Ubuntu, get those via:
+
+```
+apt install zip unzip imagemagick
+```
+
+## Installation
+
+Simply download the `compress_pptx.sh` file and execute it:
+
+```
+wget https://raw.githubusercontent.com/slhck/compress-pptx/main/compress_pptx.sh
+chmod +x compress_pptx.sh
+./compress_pptx.sh
+```
+
 ## Usage
 
 Call the script and point it to a PPTX file. It'll compress the images and output another compressed file next to it.
