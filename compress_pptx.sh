@@ -38,6 +38,10 @@ output=
 size="1" # MB above which to compress a media (PNG, TIFF) file
 quality="85" # JPEG quality
 
+if [[ $# -eq 0 ]]; then
+  usage;
+fi
+
 while getopts "s:q:o:" flag; do
 case "$flag" in
     s) size=$OPTARG;;
@@ -63,6 +67,11 @@ __cleanup() {
 }
 
 # =============================================================
+
+if [[ ! -f "$input" ]]; then
+  echo "Input file $input not found"
+  exit 1
+fi
 
 echo "Unzipping file ..."
 unzip -q "$input" -d "$tmpDir"
