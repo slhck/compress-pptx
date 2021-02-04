@@ -87,6 +87,9 @@ find "${tmpDir}/ppt/media" \
   dir="$(dirname -- "$file")"
   target="compressed_${filename%.*}.jpg"
 
+  # TODO check if image has transparency
+  # identify -format '%[opaque]' b.png --> if "false", skip it!
+
   echo "Compressing ${filename} ($(du -h "$file" | cut -f -1 | tr -d ' '))"
   convert \
     -quality "${quality}" \
