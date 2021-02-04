@@ -8,15 +8,16 @@ When copy-pasting images to PowerPoint presentations, these sometimes get insert
 
 This script takes all PNG or TIFF images part of the presentation which are larger than a given threshold (1 MiB by default), converts them to a lossy JPEG variant, and creates a new PPTX file.
 
-:warning: This will not work for PNG images containing transparency!
-
+PNGs containing transparency will be skipped to prevent graphics issues.
 ## Requirements
 
 This script runs under *nix systems and presumably also WSL.
 
+You need:
+
 - Bash
 - Perl
-- ImageMagick's `convert`
+- ImageMagick's `magick`, which calls `convert` and `identify`
 - `zip` and `unzip`
 
 Under Ubuntu, get those via:
@@ -44,13 +45,20 @@ For more options, see the `-h` output:
 ```
 ./compress_pptx.sh [-s SIZE] [-q QUALITY] [-o OUTPUT] <input>
 
-  -s SIZE     Minimum size in MiB for images to be compressed (default: 1)
-  -q QUALITY  JPEG quality from 0-100 (default: 85)
-  -o OUTPUT   Output file (default: input file with '-compressed.pptx' suffix)
+  -s SIZE     Minimum size in for images to be compressed (default: 1M)
+              You can use 'k' for KiB or 'M' for MiB as suffix.
+  -q QUALITY  JPEG quality, from 0-100 (default: 85)
+              Higher values mean better quality, larger file size.
+  -o OUTPUT   Output file (default: input file with '-compressed.pptx' suffix
 ```
 
 ## Version history
 
+- v0.2:
+  - Change size option to allow "k"/"M" suffix
+  - Add support for transparent PNGs
+  - Add better CLI output
+  - Add test PPTX files
 - v0.1: Initial release
 
 ## License
