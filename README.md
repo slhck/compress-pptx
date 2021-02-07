@@ -1,5 +1,7 @@
 # compress-pptx
 
+[![PyPI version](https://badge.fury.io/py/compress-pptx.svg)](https://badge.fury.io/py/compress-pptx)
+
 Compress a PPTX file, converting all PNG/TIFF images to lossy JPEGs.
 
 ## What it does
