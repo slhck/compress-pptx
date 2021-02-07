@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# PPTX compression script.
+# PPTX compression script, bash version.
 #
 # Compresses all images within a PPTX input that are too large.
 #
 # Options are available to set JPEG quality and size threshold.
 # See `-h` for more.
 #
-# Version: v0.1
+# Version: v0.2
 # Copyright (c) 2021, Werner Robitza <werner.robitza@gmail.com>
 # License: MIT
 

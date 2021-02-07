@@ -11,29 +11,21 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 PNGs containing transparency will be skipped to prevent graphics issues.
 ## Requirements
 
-This script runs under *nix systems and presumably also WSL.
-
-You need:
-
-- Bash
-- Perl
+- Python 3.5 or higher
 - ImageMagick's `magick`, which calls `convert` and `identify`
-- `zip` and `unzip`
 
-Under Ubuntu, get those via:
+Under Ubuntu, get ImageMagick via:
 
 ```
-apt install zip unzip imagemagick
+apt install imagemagick
 ```
 
 ## Installation
 
-Simply download the `compress_pptx.sh` file and execute it:
+Via pip:
 
 ```
-wget https://raw.githubusercontent.com/slhck/compress-pptx/main/compress_pptx.sh
-chmod +x compress_pptx.sh
-./compress_pptx.sh
+pip3 install --user compress-pptx
 ```
 
 ## Usage
@@ -43,23 +35,24 @@ Call the script and point it to a PPTX file. It'll compress the images and outpu
 For more options, see the `-h` output:
 
 ```
-./compress_pptx.sh [-s SIZE] [-q QUALITY] [-o OUTPUT] <input>
+compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-v] input
 
-  -s SIZE     Minimum size in for images to be compressed (default: 1M)
-              You can use 'k' for KiB or 'M' for MiB as suffix.
-  -q QUALITY  JPEG quality, from 0-100 (default: 85)
-              Higher values mean better quality, larger file size.
-  -o OUTPUT   Output file (default: input file with '-compressed.pptx' suffix
+positional arguments:
+  input
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Output file
+  -s SIZE, --size SIZE  Minimum size threshold in bytes. Also accepts the suffixes k/M/G or KiB/MiB/GiB
+  -q QUALITY, --quality QUALITY
+                        JPEG output quality (0-100)
+  -v, --verbose         Show additional info
 ```
 
-## Version history
+## Bash Version
 
-- v0.2:
-  - Change size option to allow "k"/"M" suffix
-  - Add support for transparent PNGs
-  - Add better CLI output
-  - Add test PPTX files
-- v0.1: Initial release
+There's an unmaintained Bash version under `bash/compress-pptx.sh`.
 
 ## License
 
