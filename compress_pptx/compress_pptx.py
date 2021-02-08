@@ -5,7 +5,13 @@ import glob
 import zipfile
 from tqdm.contrib.concurrent import process_map
 
-from .util import run_command, file_size, human_readable_size, convert_size_to_bytes
+from .util import (
+    run_command,
+    file_size,
+    human_readable_size,
+    convert_size_to_bytes,
+    which,
+)
 
 
 def _compress_image(args):
@@ -27,6 +33,10 @@ def _has_transparency(input_file):
         return True
 
 
+class CompressPptxError(SystemError):
+    pass
+
+
 class CompressPptx:
     DEFAULT_QUALITY = 85
     DEFAULT_SIZE = "1MiB"
@@ -46,14 +56,19 @@ class CompressPptx:
         self.verbose = bool(verbose)
         self.image_list = []
 
+        if which("magick") is None:
+            raise CompressPptxError(
+                "ImageMagick not found in PATH. Make sure you have installed ImageMagick and that the 'magick' command is available."
+            )
+
         if self.quality < 0 or self.quality > 100:
-            raise RuntimeError("Quality must be between 0-100!")
+            raise CompressPptxError("Quality must be between 0-100!")
 
         if not Path(self.input_file).exists():
-            raise RuntimeError(f"No such file: {self.input_file}")
+            raise CompressPptxError(f"No such file: {self.input_file}")
 
         if not Path(self.input_file).suffix.endswith("pptx"):
-            raise RuntimeError("Input must be a PPTX file!")
+            raise CompressPptxError("Input must be a PPTX file!")
 
         self.temp_dir = None
 

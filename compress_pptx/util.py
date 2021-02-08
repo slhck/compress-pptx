@@ -1,6 +1,35 @@
 import subprocess
 import shlex
 from pathlib import Path
+import os
+import sys
+
+
+def which(program):
+    """
+    Find a program in PATH and return path
+    From: http://stackoverflow.com/q/377017/
+    """
+
+    def is_exe(fpath):
+        found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+        if not found and sys.platform == "win32":
+            fpath = fpath + ".exe"
+            found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+        return found
+
+    fpath, _ = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = os.path.expandvars(os.path.expanduser(path)).strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
 
 
 def file_size(file) -> int:
@@ -11,8 +40,8 @@ def human_readable_size(size, decimal_places=2):
     """
     https://stackoverflow.com/a/43690506/435093
     """
-    for unit in ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']:
-        if size < 1024.0 or unit == 'PiB':
+    for unit in ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]:
+        if size < 1024.0 or unit == "PiB":
             break
         size /= 1024.0
     return f"{size:.{decimal_places}f} {unit}"

@@ -1,6 +1,7 @@
 import argparse
 import os
-from .compress_pptx import CompressPptx
+import sys
+from .compress_pptx import CompressPptx, CompressPptxError
 from .util import convert_size_to_bytes
 
 
@@ -16,7 +17,11 @@ def main():
         default=CompressPptx.DEFAULT_SIZE,
     )
     parser.add_argument(
-        "-q", "--quality", type=int, help="JPEG output quality (0-100)", default=CompressPptx.DEFAULT_QUALITY
+        "-q",
+        "--quality",
+        type=int,
+        help="JPEG output quality (0-100)",
+        default=CompressPptx.DEFAULT_QUALITY,
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show additional info"
@@ -32,14 +37,22 @@ def main():
 
     size_bytes = convert_size_to_bytes(cli_args.size)
 
-    CompressPptx(
-        input_file=cli_args.input,
-        output_file=output,
-        size=size_bytes,
-        quality=cli_args.quality,
-        verbose=cli_args.verbose,
-    ).run()
+    try:
+        CompressPptx(
+            input_file=cli_args.input,
+            output_file=output,
+            size=size_bytes,
+            quality=cli_args.quality,
+            verbose=cli_args.verbose,
+        ).run()
+    except CompressPptxError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        raise e
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)
