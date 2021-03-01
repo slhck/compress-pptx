@@ -10,6 +10,8 @@ When copy-pasting images to PowerPoint presentations, these sometimes get insert
 
 This script takes all PNG or TIFF images part of the presentation which are larger than a given threshold (1 MiB by default), converts them to a lossy JPEG variant, and creates a new PPTX file.
 
+:warning: This is not the same as compressing images with PowerPoint's own functionality. You may still need to do this to reduce the size of your presentation!
+
 PNGs containing transparency will be skipped to prevent graphics issues.
 ## Requirements
 
