@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v0.1.2 (2021-03-06)
+
+* Format setup.py and switch to markdown.
+
+* Add warning.
+
+* Update badge URL.
+
+
 ## v0.1.1 (2021-02-08)
 
 * Better error handling; check for magick command.
