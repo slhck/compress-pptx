@@ -46,5 +46,5 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     python_requires=">=3.5",
-    entry_points={"console_scripts": ["compress_pptx = compress_pptx.__main__:main"]},
+    entry_points={"console_scripts": ["compress-pptx = compress_pptx.__main__:main"]},
 )

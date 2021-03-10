@@ -34,12 +34,12 @@ pip3 install --user compress-pptx
 
 ## Usage
 
-Call `compress_pptx` and point it to a PPTX file. It'll compress the images and output another compressed file next to it.
+Call `compress-pptx` and point it to a PPTX file. It'll compress the images and output another compressed file next to it.
 
 For more options, see the `-h` output:
 
 ```
-compress_pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-v] input
+compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-v] input
 
 positional arguments:
   input
