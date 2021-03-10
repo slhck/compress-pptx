@@ -34,9 +34,6 @@ setup(
     install_requires=["tqdm"],
     license="MIT",
     zip_safe=False,
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    # keywords='',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -48,5 +45,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
+    python_requires=">=3.5",
     entry_points={"console_scripts": ["compress_pptx = compress_pptx.__main__:main"]},
 )
