@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.1.3 (2021-03-10)
+
+* Improve setup.py.
+
+* Remove release script.
+
+
 ## v0.1.2 (2021-03-06)
 
 * Format setup.py and switch to markdown.
