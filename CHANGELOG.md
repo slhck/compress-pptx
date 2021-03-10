@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.2.0 (2021-03-10)
+
+* Change executable name for harmonization purposes.
+
+
 ## v0.1.3 (2021-03-10)
 
 * Improve setup.py.
