@@ -1,6 +1,6 @@
 # compress-pptx
 
-[![PyPI version](https://img.shields.io/pypi/v/compress-pptx.svg)](https://img.shields.io/pypi/v/compress-pptx)
+[![PyPI version](https://img.shields.io/pypi/v/compress-pptx.svg)](https://pypi.org/project/compress-pptx)
 
 Compress a PPTX file, converting all PNG/TIFF images to lossy JPEGs.
 
