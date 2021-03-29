@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.2.1 (2021-03-29)
+
+* Add defaults to CLI options.
+
+* Update badge link.
+
+
 ## v0.2.0 (2021-03-10)
 
 * Change executable name for harmonization purposes.
