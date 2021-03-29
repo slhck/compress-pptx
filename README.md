@@ -39,7 +39,7 @@ Call `compress-pptx` and point it to a PPTX file. It'll compress the images and 
 For more options, see the `-h` output:
 
 ```
-compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-v] input
+usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-v] input
 
 positional arguments:
   input
@@ -47,11 +47,12 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
-                        Output file
-  -s SIZE, --size SIZE  Minimum size threshold in bytes. Also accepts the suffixes k/M/G or KiB/MiB/GiB
+                        Output file (default: None)
+  -s SIZE, --size SIZE  Minimum size threshold in bytes. Also accepts the
+                        suffixes k/M/G or KiB/MiB/GiB (default: 1MiB)
   -q QUALITY, --quality QUALITY
-                        JPEG output quality (0-100)
-  -v, --verbose         Show additional info
+                        JPEG output quality (0-100) (default: 85)
+  -v, --verbose         Show additional info (default: False)
 ```
 
 ## Bash Version
