@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v0.3.0 (2021-05-14)
+
+* Auto-formatting.
+
+* Add -f/--force parameter.
+
+* Update gitignore.
+
+
 ## v0.2.1 (2021-03-29)
 
 * Add defaults to CLI options.
