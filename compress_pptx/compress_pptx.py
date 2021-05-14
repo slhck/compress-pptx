@@ -74,7 +74,9 @@ class CompressPptx:
             raise CompressPptxError("Input must be a PPTX file!")
 
         if Path(self.output_file).exists() and not self.force:
-            raise CompressPptxError(f"Output file {self.output_file} already exists. Use -f/--force to force overwriting.")
+            raise CompressPptxError(
+                f"Output file {self.output_file} already exists. Use -f/--force to force overwriting."
+            )
 
         self.temp_dir = None
 

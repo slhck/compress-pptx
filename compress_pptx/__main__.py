@@ -6,7 +6,9 @@ from .util import convert_size_to_bytes
 
 
 def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("input")
     parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument(
