@@ -26,6 +26,9 @@ def main():
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show additional info"
     )
+    parser.add_argument(
+        "-f", "--force", action="store_true", help="Force overwriting output file"
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -44,6 +47,7 @@ def main():
             size=size_bytes,
             quality=cli_args.quality,
             verbose=cli_args.verbose,
+            force=cli_args.force,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")

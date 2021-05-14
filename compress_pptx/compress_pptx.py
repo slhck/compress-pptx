@@ -48,12 +48,15 @@ class CompressPptx:
         size=convert_size_to_bytes(DEFAULT_SIZE),
         quality=DEFAULT_QUALITY,
         verbose=False,
+        force=False,
     ) -> None:
         self.input_file = input_file
         self.output_file = output_file
         self.size = int(size)
         self.quality = int(quality)
         self.verbose = bool(verbose)
+        self.force = bool(force)
+
         self.image_list = []
 
         if which("magick") is None:
@@ -69,6 +72,9 @@ class CompressPptx:
 
         if not Path(self.input_file).suffix.endswith("pptx"):
             raise CompressPptxError("Input must be a PPTX file!")
+
+        if Path(self.output_file).exists() and not self.force:
+            raise CompressPptxError(f"Output file {self.output_file} already exists. Use -f/--force to force overwriting.")
 
         self.temp_dir = None
 
