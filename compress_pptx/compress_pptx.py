@@ -20,15 +20,18 @@ def _compress_image(args):
         "convert",
         "-quality",
         str(args["quality"]),
-        args["input"],
+        "-background", "white",
+        "-alpha", "remove",
+        "-alpha", "off",
+        args["input"] + "[0]",  # add [0] to use only the first page of TIFFs
         args["output"],
     ]
-    run_command(cmd)
+    run_command(cmd, verbose=args["verbose"])
 
 
-def _has_transparency(input_file):
+def _has_transparency(input_file, verbose=False):
     cmd = ["magick", "identify", "-format", "%[opaque]", input_file]
-    stdout, _ = run_command(cmd)
+    stdout, _ = run_command(cmd, verbose=verbose)
     if stdout.strip() == "False":
         return True
 
@@ -40,6 +43,7 @@ class CompressPptxError(SystemError):
 class CompressPptx:
     DEFAULT_QUALITY = 85
     DEFAULT_SIZE = "1MiB"
+    DEFAULT_TRANSPARENCY = "white"
 
     def __init__(
         self,
@@ -47,6 +51,7 @@ class CompressPptx:
         output_file: str,
         size=convert_size_to_bytes(DEFAULT_SIZE),
         quality=DEFAULT_QUALITY,
+        transparency=DEFAULT_TRANSPARENCY,
         verbose=False,
         force=False,
     ) -> None:
@@ -54,6 +59,7 @@ class CompressPptx:
         self.output_file = output_file
         self.size = int(size)
         self.quality = int(quality)
+        self.transparency = str(transparency)
         self.verbose = bool(verbose)
         self.force = bool(force)
 
@@ -130,7 +136,7 @@ class CompressPptx:
                 continue
 
             # skip files with transparency
-            if _has_transparency(file):
+            if _has_transparency(file, self.verbose):
                 # print(f"Skipping {Path(file).name} because it contains transparency")
                 continue
 
@@ -146,6 +152,8 @@ class CompressPptx:
                     "input_size": fsize,
                     "output_size": None,
                     "quality": self.quality,
+                    "transparency": self.transparency,
+                    "verbose": self.verbose,
                 }
             )
 
@@ -156,15 +164,16 @@ class CompressPptx:
 
         print(f"Compressing {len(self.image_list)} file(s) ...")
 
-        # for image in self.image_list:
-        #     print(f"Compressing {image['input']} to {image['output']}")
+        for image in self.image_list:
+            if self.verbose:
+                print(f"Compressing {image['input']} to {image['output']}")
 
         process_map(_compress_image, self.image_list)
 
         # remove borked files
         warnings = []
         for image in self.image_list:
-            if not Path(image["output"]).exists:
+            if not Path(image["output"]).exists():
                 print(f"Warning: could not convert {image['input']}")
                 warnings.append(image)
 

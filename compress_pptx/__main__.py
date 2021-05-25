@@ -26,6 +26,13 @@ def main():
         default=CompressPptx.DEFAULT_QUALITY,
     )
     parser.add_argument(
+        "-t",
+        "--transparency",
+        type=str,
+        help="Replace transparency with color",
+        default=CompressPptx.DEFAULT_TRANSPARENCY,
+    )
+    parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show additional info"
     )
     parser.add_argument(

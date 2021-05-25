@@ -52,7 +52,7 @@ def run_command(cmd, dry_run=False, verbose=False):
     Run a command directly
     """
     if dry_run or verbose:
-        print(" ".join([shlex.quote(c) for c in cmd]))
+        print(" ".join([shlex.quote(str(c)) for c in cmd]))
         if dry_run:
             return None, None
 
