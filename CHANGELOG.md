@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.4.0 (2021-05-25)
+
+* Add handling of transparency and TIFFs.
+
+
 ## v0.3.0 (2021-05-14)
 
 * Auto-formatting.
