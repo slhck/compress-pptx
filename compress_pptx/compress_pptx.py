@@ -16,13 +16,15 @@ from .util import (
 
 def _compress_image(args):
     cmd = [
-        "magick",
         "convert",
         "-quality",
         str(args["quality"]),
-        "-background", "white",
-        "-alpha", "remove",
-        "-alpha", "off",
+        "-background",
+        "white",
+        "-alpha",
+        "remove",
+        "-alpha",
+        "off",
         args["input"] + "[0]",  # add [0] to use only the first page of TIFFs
         args["output"],
     ]
@@ -30,7 +32,7 @@ def _compress_image(args):
 
 
 def _has_transparency(input_file, verbose=False):
-    cmd = ["magick", "identify", "-format", "%[opaque]", input_file]
+    cmd = ["identify", "-format", "%[opaque]", input_file]
     stdout, _ = run_command(cmd, verbose=verbose)
     if stdout.strip() == "False":
         return True
@@ -65,10 +67,11 @@ class CompressPptx:
 
         self.image_list = []
 
-        if which("magick") is None:
-            raise CompressPptxError(
-                "ImageMagick not found in PATH. Make sure you have installed ImageMagick and that the 'magick' command is available."
-            )
+        for expected_cmd in ["convert", "identify"]:
+            if which(expected_cmd) is None:
+                raise CompressPptxError(
+                    f"ImageMagick '{expected_cmd}' not found in PATH. Make sure you have installed ImageMagick and that the '{expected_cmd}' command is available."
+                )
 
         if self.quality < 0 or self.quality > 100:
             raise CompressPptxError("Quality must be between 0-100!")

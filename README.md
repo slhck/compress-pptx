@@ -16,12 +16,18 @@ PNGs containing transparency will be skipped to prevent graphics issues.
 ## Requirements
 
 - Python 3.5 or higher
-- ImageMagick's `magick`, which calls `convert` and `identify`
+- ImageMagick's `convert` and `identify`
 
 Under Ubuntu, get ImageMagick via:
 
 ```
 apt install imagemagick
+```
+
+Under macOS, install it with [Homebrew](https://brew.sh):
+
+```
+brew install imagemagick
 ```
 
 ## Installation
