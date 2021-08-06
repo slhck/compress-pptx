@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.5.0 (2021-08-06)
+
+* Allow POTX files, fixes #4.
+
+* Fallback to 'convert' and 'identify', fixes #3.
+
+
 ## v0.4.0 (2021-05-25)
 
 * Add handling of transparency and TIFFs.
