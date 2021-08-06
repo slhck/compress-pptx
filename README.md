@@ -2,7 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/compress-pptx.svg)](https://pypi.org/project/compress-pptx)
 
-Compress a PPTX file, converting all PNG/TIFF images to lossy JPEGs.
+Compress a PPTX or POTX file, converting all PNG/TIFF images to lossy JPEGs.
 
 ## What it does
 
@@ -40,7 +40,7 @@ pip3 install --user compress-pptx
 
 ## Usage
 
-Call `compress-pptx` and point it to a PPTX file. It'll compress the images and output another compressed file next to it.
+Call `compress-pptx` and point it to a PPTX or POTX file. It'll compress the images and output another compressed file next to it.
 
 For more options, see the `-h` output:
 

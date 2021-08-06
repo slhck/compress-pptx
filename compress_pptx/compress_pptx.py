@@ -79,8 +79,11 @@ class CompressPptx:
         if not Path(self.input_file).exists():
             raise CompressPptxError(f"No such file: {self.input_file}")
 
-        if not Path(self.input_file).suffix.endswith("pptx"):
-            raise CompressPptxError("Input must be a PPTX file!")
+        if not (
+            Path(self.input_file).suffix.endswith("pptx")
+            or Path(self.input_file).suffix.endswith("potx")
+        ):
+            raise CompressPptxError("Input must be a PPTX or POTX file!")
 
         if Path(self.output_file).exists() and not self.force:
             raise CompressPptxError(
