@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.6.0 (2021-10-28)
+
+* Add feature to skip transparent images completely, add EMF.
+
+
 ## v0.5.0 (2021-08-06)
 
 * Allow POTX files, fixes #4.
