@@ -54,6 +54,7 @@ class CompressPptx:
         size=convert_size_to_bytes(DEFAULT_SIZE),
         quality=DEFAULT_QUALITY,
         transparency=DEFAULT_TRANSPARENCY,
+        skip_transparent_images=False,
         verbose=False,
         force=False,
     ) -> None:
@@ -62,6 +63,7 @@ class CompressPptx:
         self.size = int(size)
         self.quality = int(quality)
         self.transparency = str(transparency)
+        self.skip_transparent_images = bool(skip_transparent_images)
         self.verbose = bool(verbose)
         self.force = bool(force)
 
@@ -132,7 +134,9 @@ class CompressPptx:
             os.path.join(self.temp_dir, "ppt", "media", "*"), recursive=True
         ):
             # skip unaffected extensions
-            if not (file.endswith(".png") or file.endswith(".tiff")):
+            if not (
+                file.endswith(".png") or file.endswith(".emf") or file.endswith(".tiff")
+            ):
                 continue
 
             # skip files that are too small
@@ -142,8 +146,9 @@ class CompressPptx:
                 continue
 
             # skip files with transparency
-            if _has_transparency(file, self.verbose):
-                # print(f"Skipping {Path(file).name} because it contains transparency")
+            if self.skip_transparent_images and _has_transparency(file, self.verbose):
+                if self.verbose:
+                    print(f"Skipping {Path(file).name} because it contains transparency")
                 continue
 
             if self.verbose:

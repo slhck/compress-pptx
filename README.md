@@ -12,7 +12,7 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 
 :warning: This is not the same as compressing images with PowerPoint's own functionality. You may still need to do this to reduce the size of your presentation!
 
-PNGs containing transparency will be skipped to prevent graphics issues.
+PNGs containing transparency can be skipped to prevent graphics issues. Normally their transparent parts are replaced with white (although you can choose another color).
 ## Requirements
 
 - Python 3.5 or higher
@@ -45,7 +45,9 @@ Call `compress-pptx` and point it to a PPTX or POTX file. It'll compress the ima
 For more options, see the `-h` output:
 
 ```
-usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY] [-v] [-f] input
+usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
+                     [-k] [-v] [-f]
+                     input
 
 positional arguments:
   input
@@ -54,13 +56,18 @@ optional arguments:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
                         Output file (default: None)
-  -s SIZE, --size SIZE  Minimum size threshold in bytes. Also accepts the suffixes k/M/G or KiB/MiB/GiB (default: 1MiB)
+  -s SIZE, --size SIZE  Minimum size threshold in bytes. Also accepts the
+                        suffixes k/M/G or KiB/MiB/GiB (default: 1MiB)
   -q QUALITY, --quality QUALITY
                         JPEG output quality (0-100) (default: 85)
   -t TRANSPARENCY, --transparency TRANSPARENCY
                         Replace transparency with color (default: white)
+  -k, --skip-transparent-images
+                        Skip converting transparent images at all (default:
+                        False)
   -v, --verbose         Show additional info (default: False)
   -f, --force           Force overwriting output file (default: False)
+
 ```
 
 ## Bash Version
