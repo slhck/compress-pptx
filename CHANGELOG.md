@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.7.0 (2022-08-02)
+
+* Update python requirements.
+
+
 ## v0.6.0 (2021-10-28)
 
 * Add feature to skip transparent images completely, add EMF.
