@@ -15,7 +15,7 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 PNGs containing transparency can be skipped to prevent graphics issues. Normally their transparent parts are replaced with white (although you can choose another color).
 ## Requirements
 
-- Python 3.5 or higher
+- Python 3.7 or higher
 - ImageMagick's `convert` and `identify`
 
 Under Ubuntu, get ImageMagick via:
@@ -78,7 +78,7 @@ There's an unmaintained Bash version under `bash/compress-pptx.sh`.
 
 MIT License
 
-Copyright (c) 2021 Werner Robitza
+Copyright (c) 2021-2022 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
