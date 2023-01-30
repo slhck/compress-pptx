@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.7.2 (2023-01-30)
+
+* Remove manifest.in.
+
+
 ## v0.7.1 (2022-08-02)
 
 * Update python requirements.
