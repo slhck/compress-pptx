@@ -14,7 +14,7 @@ from .util import (
 )
 
 
-def _compress_image(args):
+def _compress_file(args):
     if (args["is_image"]):
         # image, use convert (imagemagick)
         cmd = [
@@ -91,7 +91,7 @@ class CompressPptx:
         self.converted_audio_extensions = ".mp3"
 
 
-        self.image_list = []
+        self.file_list = []
 
         required_executables = ["convert", "identify"]
         ## add ffmpeg to required executables if user wants media files to be compressed
@@ -133,10 +133,10 @@ class CompressPptx:
             self._unzip()
 
             # Collect compressible files
-            self._find_images()
+            self._find_files()
 
             # Compress
-            self._compress_images()
+            self._compress_files()
 
             # Replace rels
             self._replace_rels()
@@ -160,7 +160,7 @@ class CompressPptx:
                 return True
         return False
 
-    def _find_images(self) -> None:
+    def _find_files(self) -> None:
         if self.temp_dir is None:
             raise RuntimeError("Temp dir not created!")
 
@@ -202,7 +202,7 @@ class CompressPptx:
 
             
 
-            self.image_list.append(
+            self.file_list.append(
                 {
                     "is_image": is_image,
                     "input": file,
@@ -215,33 +215,33 @@ class CompressPptx:
                 }
             )
 
-    def _compress_images(self) -> None:
-        if len(self.image_list) == 0:
-            print("No images to compress!")
+    def _compress_files(self) -> None:
+        if len(self.file_list) == 0:
+            print("No Files to compress!")
             return
 
-        print(f"Compressing {len(self.image_list)} file(s) ...")
+        print(f"Compressing {len(self.file_list)} file(s) ...")
 
-        for image in self.image_list:
+        for file in self.file_list:
             if self.verbose:
-                print(f"Compressing {image['input']} to {image['output']}")
+                print(f"Compressing {file['input']} to {file['output']}")
 
-        process_map(_compress_image, self.image_list)
+        process_map(_compress_file, self.file_list)
 
         # remove borked files
         warnings = []
-        for image in self.image_list:
-            if not Path(image["output"]).exists():
-                print(f"Warning: could not convert {image['input']}")
-                warnings.append(image)
+        for file in self.file_list:
+            if not Path(file["output"]).exists():
+                print(f"Warning: could not convert {file['input']}")
+                warnings.append(file)
 
-            output_size = file_size(image["output"])
-            image["output_size"] = output_size
+            output_size = file_size(file["output"])
+            file["output_size"] = output_size
 
-        [self.image_list.remove(w) for w in warnings]
+        [self.file_list.remove(w) for w in warnings]
 
         # delete originals
-        [os.remove(f["input"]) for f in self.image_list]
+        [os.remove(f["input"]) for f in self.file_list]
 
     def _replace_rels(self) -> None:
         if self.temp_dir is None:
@@ -257,9 +257,9 @@ class CompressPptx:
             with open(str(file)) as f:
                 content = f.read()
 
-                for image in self.image_list:
-                    original_file = Path(image["input"]).name
-                    target_file = Path(image["output"]).name
+                for file in self.file_list:
+                    original_file = Path(file["input"]).name
+                    target_file = Path(file["output"]).name
 
                     if original_file not in content:
                         continue
