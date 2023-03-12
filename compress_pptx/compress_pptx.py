@@ -257,9 +257,9 @@ class CompressPptx:
             with open(str(file)) as f:
                 content = f.read()
 
-                for file in self.file_list:
-                    original_file = Path(file["input"]).name
-                    target_file = Path(file["output"]).name
+                for compress_file in self.file_list:
+                    original_file = Path(compress_file["input"]).name
+                    target_file = Path(compress_file["output"]).name
 
                     if original_file not in content:
                         continue
