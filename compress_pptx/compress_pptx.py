@@ -15,19 +15,29 @@ from .util import (
 
 
 def _compress_image(args):
-    cmd = [
-        "convert",
-        "-quality",
-        str(args["quality"]),
-        "-background",
-        "white",
-        "-alpha",
-        "remove",
-        "-alpha",
-        "off",
-        args["input"] + "[0]",  # add [0] to use only the first page of TIFFs
-        args["output"],
-    ]
+    if (args["is_image"]):
+        # image, use convert (imagemagick)
+        cmd = [
+            "convert",
+            "-quality",
+            str(args["quality"]),
+            "-background",
+            "white",
+            "-alpha",
+            "remove",
+            "-alpha",
+            "off",
+            args["input"] + "[0]",  # add [0] to use only the first page of TIFFs
+            args["output"],
+        ]
+    else:
+        # video, use ffmpeg
+        cmd = [
+            "ffmpeg",
+            "-i",
+            args["input"],
+            args["output"]
+        ]
     run_command(cmd, verbose=args["verbose"])
 
 
@@ -57,6 +67,8 @@ class CompressPptx:
         skip_transparent_images=False,
         verbose=False,
         force=False,
+        compress_media=False,
+        recompress_jpeg=False
     ) -> None:
         self.input_file = input_file
         self.output_file = output_file
@@ -66,10 +78,26 @@ class CompressPptx:
         self.skip_transparent_images = bool(skip_transparent_images)
         self.verbose = bool(verbose)
         self.force = bool(force)
+        self.compress_media=compress_media
+
+        ## file extensions and conversions
+        self.image_extensions = ['.png', '.emf', '.tiff']
+        if recompress_jpeg: self.image_extensions.extend(['.jpg', '.jpeg'])
+        self.converted_image_extension = ".jpg"
+
+        self.video_extensions = ['.mov', '.avi', '.mp4']
+        self.converted_video_extensions = ".mp4"
+        self.audio_extensions = ['.mp3', '.wav']
+        self.converted_audio_extensions = ".mp3"
+
 
         self.image_list = []
 
-        for expected_cmd in ["convert", "identify"]:
+        required_executables = ["convert", "identify"]
+        ## add ffmpeg to required executables if user wants media files to be compressed
+        if (self.compress_media): required_executables.append("ffmpeg")
+
+        for expected_cmd in required_executables:
             if which(expected_cmd) is None:
                 raise CompressPptxError(
                     f"ImageMagick '{expected_cmd}' not found in PATH. Make sure you have installed ImageMagick and that the '{expected_cmd}' command is available."
@@ -126,6 +154,12 @@ class CompressPptx:
             if self.verbose:
                 print(f"Extracted temp files to {self.temp_dir}")
 
+    def _check_endswith(self,filename, extensions):
+        for ext in extensions:
+            if filename.endswith(ext):
+                return True
+        return False
+
     def _find_images(self) -> None:
         if self.temp_dir is None:
             raise RuntimeError("Temp dir not created!")
@@ -133,11 +167,20 @@ class CompressPptx:
         for file in glob.iglob(
             os.path.join(self.temp_dir, "ppt", "media", "*"), recursive=True
         ):
+            is_image = True
+            output_extension = self.converted_image_extension
             # skip unaffected extensions
-            if not (
-                file.endswith(".png") or file.endswith(".emf") or file.endswith(".tiff")
-            ):
-                continue
+            if not (self._check_endswith(file, self.image_extensions)): # is not an image
+                if (self.compress_media): # and is also not a media (and compressing media enabled)
+                    is_image = False
+                    if (self._check_endswith(file, self.video_extensions)):
+                        output_extension = self.converted_video_extensions
+                    elif (self._check_endswith(file, self.audio_extensions)):
+                        output_extension = self.converted_audio_extensions
+                    else:
+                        continue ## file is not a media file
+                else:
+                    continue ## file is not an image
 
             # skip files that are too small
             fsize = file_size(file)
@@ -145,21 +188,25 @@ class CompressPptx:
                 # print(f"Skipping {Path(file).name} because it is too small")
                 continue
 
-            # skip files with transparency
-            if self.skip_transparent_images and _has_transparency(file, self.verbose):
-                if self.verbose:
-                    print(f"Skipping {Path(file).name} because it contains transparency")
-                continue
+            if (is_image): # image file
+                # skip files with transparency
+                if self.skip_transparent_images and _has_transparency(file, self.verbose):
+                    if self.verbose:
+                        print(f"Skipping {Path(file).name} because it contains transparency")
+                    continue
 
             if self.verbose:
                 print(
                     f"{Path(file).name} added to conversion queue ({human_readable_size(fsize)})"
                 )
 
+            
+
             self.image_list.append(
                 {
+                    "is_image": is_image,
                     "input": file,
-                    "output": Path(file).parent / (Path(file).stem + "-compressed.jpg"),
+                    "output": Path(file).parent / (Path(file).stem + "-compressed"+output_extension),
                     "input_size": fsize,
                     "output_size": None,
                     "quality": self.quality,

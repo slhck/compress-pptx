@@ -45,6 +45,15 @@ def main():
     parser.add_argument(
         "-f", "--force", action="store_true", help="Force overwriting output file"
     )
+    parser.add_argument(
+        "-m",
+        "--compress-media",
+        action="store_true",
+        help="Compress other media types such as audio and video, requires FFmpeg"
+    )
+    parser.add_argument(
+        "-j", "--recompress-jpeg", action="store_true", help="Recompress jpeg images"
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -66,6 +75,8 @@ def main():
             skip_transparent_images=cli_args.skip_transparent_images,
             verbose=cli_args.verbose,
             force=cli_args.force,
+            compress_media=cli_args.compress_media,
+            recompress_jpeg=cli_args.recompress_jpeg
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")
