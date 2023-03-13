@@ -234,9 +234,9 @@ class CompressPptx:
             if not Path(file["output"]).exists():
                 print(f"Warning: could not convert {file['input']}")
                 warnings.append(file)
-
-            output_size = file_size(file["output"])
-            file["output_size"] = output_size
+            else:
+                output_size = file_size(file["output"])
+                file["output_size"] = output_size
 
         [self.file_list.remove(w) for w in warnings]
 
