@@ -68,7 +68,8 @@ class CompressPptx:
         verbose=False,
         force=False,
         compress_media=False,
-        recompress_jpeg=False
+        recompress_jpeg=False,
+        use_libreoffice=False
     ) -> None:
         self.input_file = input_file
         self.output_file = output_file
@@ -79,7 +80,7 @@ class CompressPptx:
         self.verbose = bool(verbose)
         self.force = bool(force)
         self.compress_media=compress_media
-
+        self.use_libreoffice = use_libreoffice
         ## file extensions and conversions
         self.image_extensions = ['.png', '.emf', '.tiff']
         if recompress_jpeg: self.image_extensions.extend(['.jpg', '.jpeg'])
@@ -96,6 +97,8 @@ class CompressPptx:
         required_executables = ["convert", "identify"]
         ## add ffmpeg to required executables if user wants media files to be compressed
         if (self.compress_media): required_executables.append("ffmpeg")
+        ## add "unoconv" (libreoffice package) to required executables of user wants emf files compressed
+        if (self.use_libreoffice): required_executables.append("unoconv")
 
         for expected_cmd in required_executables:
             if which(expected_cmd) is None:
@@ -215,18 +218,43 @@ class CompressPptx:
                 }
             )
 
+    def _libreoffice_compress_files(self, files):
+        for file in files:
+            cmd = [
+                "unoconv",
+                "-f",
+                "jpg",
+                "-o",
+                file["output"],
+                file["input"],
+            ]
+            run_command(cmd, verbose=file['verbose'])
+
     def _compress_files(self) -> None:
         if len(self.file_list) == 0:
             print("No Files to compress!")
             return
 
-        print(f"Compressing {len(self.file_list)} file(s) ...")
-
         for file in self.file_list:
             if self.verbose:
                 print(f"Compressing {file['input']} to {file['output']}")
 
-        process_map(_compress_file, self.file_list)
+        # compress files with "convert" and "ffmpeg" in parallel
+        non_emf_files = [f for f in self.file_list if not f['input'].endswith(".emf")]
+        print(f"Compressing {len(non_emf_files)} file(s) ...")
+        process_map(_compress_file, non_emf_files)
+
+
+        emf_files = [f for f in self.file_list if f['input'].endswith(".emf")]
+        if (len(emf_files) > 0):
+            print(f"Compressing {len(emf_files)} .EMF file(s) ...")
+            if (self.use_libreoffice):
+                # compress ".emf" (microsoft) files using libreoffice sequentially
+                # (idk why, but it dosent work in parallel)
+                self._libreoffice_compress_files(emf_files)
+            else:
+                # compress ".emf" files using "convert" which works only on windows
+                process_map(_compress_file, emf_files)
 
         # remove borked files
         warnings = []

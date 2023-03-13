@@ -54,6 +54,12 @@ def main():
     parser.add_argument(
         "-j", "--recompress-jpeg", action="store_true", help="Recompress jpeg images"
     )
+    parser.add_argument(
+        "-l",
+        "--use-libreoffice",
+        action="store_true",
+        help="Use libreoffice to compress EMF files (only way to compress emf files on linux)"
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -76,7 +82,8 @@ def main():
             verbose=cli_args.verbose,
             force=cli_args.force,
             compress_media=cli_args.compress_media,
-            recompress_jpeg=cli_args.recompress_jpeg
+            recompress_jpeg=cli_args.recompress_jpeg,
+            use_libreoffice=cli_args.use_libreoffice
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")
