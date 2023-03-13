@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-from setuptools import setup, find_packages
 
-# To use a consistent encoding
-from codecs import open
 from os import path
+
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -13,11 +11,11 @@ with open(path.join(here, "compress_pptx", "__init__.py")) as version_file:
     version = eval(version_file.read().split(" = ")[1].strip())
 
 # Get the long description from the README file
-with open(path.join(here, "README.md"), encoding="utf-8") as f:
+with open(path.join(here, "README.md")) as f:
     long_description = f.read()
 
 # Get the history from the CHANGELOG file
-with open(path.join(here, "CHANGELOG.md"), encoding="utf-8") as f:
+with open(path.join(here, "CHANGELOG.md")) as f:
     history = f.read()
 
 setup(
@@ -40,11 +38,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     entry_points={"console_scripts": ["compress-pptx = compress_pptx.__main__:main"]},
 )
