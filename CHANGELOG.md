@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v0.8.0 (2023-03-13)
+
+* Bump requirement to python 3.8.
+
+* Docs: add @caydey as a contributor.
+
+* Update README and minor code changes.
+
+* Added '-l' to compress emf files using libreoffice.
+
+* Fixed bug for when file compression fails.
+
+* Fixed bug with clashing variable names.
+
+* Refractored "image" to "file"
+
+* Media file compression and recompress jpeg files.
+
+
 ## v0.7.2 (2023-01-30)
 
 * Remove manifest.in.
