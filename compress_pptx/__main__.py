@@ -1,14 +1,14 @@
 import argparse
 import os
 import sys
+
 from .compress_pptx import CompressPptx, CompressPptxError
 from .util import convert_size_to_bytes
 
 
 def main():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        prog="compress-pptx"
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog="compress-pptx"
     )
     parser.add_argument("input")
     parser.add_argument("-o", "--output", help="Output file")
@@ -49,7 +49,7 @@ def main():
         "-m",
         "--compress-media",
         action="store_true",
-        help="Compress other media types such as audio and video, requires FFmpeg"
+        help="Compress other media types such as audio and video (requires ffmpeg)",
     )
     parser.add_argument(
         "-j", "--recompress-jpeg", action="store_true", help="Recompress jpeg images"
@@ -58,7 +58,7 @@ def main():
         "-l",
         "--use-libreoffice",
         action="store_true",
-        help="Use libreoffice to compress EMF files (only way to compress emf files on linux)"
+        help="Use LibreOffice to compress EMF files (only way to compress EMF files under Linux)",
     )
     cli_args = parser.parse_args()
 
@@ -83,7 +83,7 @@ def main():
             force=cli_args.force,
             compress_media=cli_args.compress_media,
             recompress_jpeg=cli_args.recompress_jpeg,
-            use_libreoffice=cli_args.use_libreoffice
+            use_libreoffice=cli_args.use_libreoffice,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")

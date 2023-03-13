@@ -15,8 +15,11 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 PNGs containing transparency can be skipped to prevent graphics issues. Normally their transparent parts are replaced with white (although you can choose another color).
 ## Requirements
 
+- Operating system: macOS or Linux
+  - Note: Under Linux, you need LibreOffice installed to convert embedded EMF files
 - Python 3.7 or higher
 - ImageMagick's `convert` and `identify`
+- Optionally: `ffmpeg` for media files, and 
 
 Under Ubuntu, get ImageMagick via:
 
@@ -29,6 +32,8 @@ Under macOS, install it with [Homebrew](https://brew.sh):
 ```
 brew install imagemagick
 ```
+
+For ffmpeg, use the static builds from [ffmpeg.org](https://ffmpeg.org/downloads.html).
 
 ## Installation
 
@@ -46,13 +51,13 @@ For more options, see the `-h` output:
 
 ```
 usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
-                     [-k] [-v] [-f]
+                     [-k] [-v] [-f] [-m] [-j] [-l]
                      input
 
 positional arguments:
   input
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
                         Output file (default: None)
@@ -67,7 +72,13 @@ optional arguments:
                         False)
   -v, --verbose         Show additional info (default: False)
   -f, --force           Force overwriting output file (default: False)
-
+  -m, --compress-media  Compress other media types such as audio and video
+                        (requires ffmpeg) (default: False)
+  -j, --recompress-jpeg
+                        Recompress jpeg images (default: False)
+  -l, --use-libreoffice
+                        Use LibreOffice to compress EMF files (only way to
+                        compress EMF files under Linux) (default: False)
 ```
 
 ## Bash Version
@@ -78,7 +89,7 @@ There's an unmaintained Bash version under `bash/compress-pptx.sh`.
 
 MIT License
 
-Copyright (c) 2021-2022 Werner Robitza
+Copyright (c) 2021-2023 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
