@@ -2,6 +2,10 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/compress-pptx.svg)](https://pypi.org/project/compress-pptx)
 
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
 Compress a PPTX or POTX file, converting all PNG/TIFF images to lossy JPEGs.
 
 ## What it does
@@ -84,6 +88,24 @@ options:
 ## Bash Version
 
 There's an unmaintained Bash version under `bash/compress-pptx.sh`.
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/caydey"><img src="https://avatars.githubusercontent.com/u/63204672?v=4?s=100" width="100px;" alt="caydey"/><br /><sub><b>caydey</b></sub></a><br /><a href="https://github.com/slhck/compress-pptx/commits?author=caydey" title="Code">💻</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 

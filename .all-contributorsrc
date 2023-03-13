@@ -1,0 +1,25 @@
+{
+  "projectName": "compress-pptx",
+  "projectOwner": "slhck",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "caydey",
+      "name": "caydey",
+      "avatar_url": "https://avatars.githubusercontent.com/u/63204672?v=4",
+      "profile": "https://github.com/caydey",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": false
+}
