@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.8.2 (2023-10-02)
+
+* Add CLI option for num_cpus.
+
+
 ## v0.8.1 (2023-10-02)
 
 * Formatting and fix path handling.
