@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.8.3 (2023-10-02)
+
+* Migrate to magick commands.
+
+
 ## v0.8.2 (2023-10-02)
 
 * Add CLI option for num_cpus.
