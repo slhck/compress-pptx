@@ -23,7 +23,7 @@ PNGs containing transparency can be skipped to prevent graphics issues. Normally
   - Note: Under Linux, you need LibreOffice installed to convert embedded EMF files
 - Python 3.8 or higher
 - ImageMagick's `convert` and `identify`
-- Optionally: `ffmpeg` for media files, and 
+- Optionally: `ffmpeg` for media files, and
 
 Under Ubuntu, get ImageMagick via:
 
@@ -55,7 +55,7 @@ For more options, see the `-h` output:
 
 ```
 usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
-                     [-k] [-v] [-f] [-m] [-j] [-l]
+                     [-k] [-v] [-f] [-m] [-j] [-l] [--num-cpus NUM_CPUS]
                      input
 
 positional arguments:
@@ -83,6 +83,7 @@ options:
   -l, --use-libreoffice
                         Use LibreOffice to compress EMF files (only way to
                         compress EMF files under Linux) (default: False)
+  --num-cpus NUM_CPUS   Number of CPUs to use (default: all available CPUs)
 ```
 
 ## Bash Version

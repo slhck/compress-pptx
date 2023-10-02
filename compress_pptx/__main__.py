@@ -60,6 +60,12 @@ def main():
         action="store_true",
         help="Use LibreOffice to compress EMF files (only way to compress EMF files under Linux)",
     )
+    parser.add_argument(
+        "--num-cpus",
+        type=int,
+        help="Number of CPUs to use (default: all available CPUs)",
+        default=os.cpu_count() or 1,
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -84,7 +90,7 @@ def main():
             compress_media=cli_args.compress_media,
             recompress_jpeg=cli_args.recompress_jpeg,
             use_libreoffice=cli_args.use_libreoffice,
-            num_cpus=os.cpu_count(),
+            num_cpus=cli_args.num_cpus,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")
