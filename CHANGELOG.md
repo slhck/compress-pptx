@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.8.1 (2023-10-02)
+
+* Formatting and fix path handling.
+
+
 ## v0.8.0 (2023-03-13)
 
 * Bump requirement to python 3.8.
