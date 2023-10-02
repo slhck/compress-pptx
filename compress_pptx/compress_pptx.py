@@ -31,6 +31,7 @@ def _compress_file(file: FileObj):
     if file["is_image"]:
         # image, use convert (imagemagick)
         cmd = [
+            "magick",
             "convert",
             "-quality",
             str(file["quality"]),
@@ -50,7 +51,7 @@ def _compress_file(file: FileObj):
 
 
 def _has_transparency(input_file: str, verbose=False) -> bool:
-    cmd = ["identify", "-format", "%[opaque]", input_file]
+    cmd = ["magick", "identify", "-format", "%[opaque]", input_file]
     stdout, _ = run_command(cmd, verbose=verbose)
     if stdout is not None and stdout.strip() == "False":
         return True
@@ -123,7 +124,7 @@ class CompressPptx:
 
         self.file_list: List[FileObj] = []
 
-        required_executables = ["convert", "identify"]
+        required_executables = ["magick"]
         # add ffmpeg to required executables if user wants media files to be compressed
         if self.compress_media:
             required_executables.append("ffmpeg")
@@ -279,7 +280,7 @@ class CompressPptx:
             if self.verbose:
                 print(f"Compressing {file['input']} to {file['output']}")
 
-        # compress files with "convert" and "ffmpeg" in parallel
+        # compress files with "magick convert" and "ffmpeg" in parallel
         non_emf_files = [f for f in self.file_list if not f["input"].endswith(".emf")]
         print(f"Compressing {len(non_emf_files)} file(s) ...")
         if self.num_cpus > 1:
@@ -296,7 +297,7 @@ class CompressPptx:
                 # (idk why, but it dosent work in parallel)
                 self._libreoffice_compress_files(emf_files)
             else:
-                # compress ".emf" files using "convert" which works only on windows
+                # compress ".emf" files using "magick convert" which works only on windows
                 if self.num_cpus > 1:
                     process_map(_compress_file, emf_files, max_workers=self.num_cpus)
                 else:
