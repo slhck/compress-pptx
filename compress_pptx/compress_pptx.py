@@ -1,51 +1,60 @@
-import os
-from pathlib import Path
-import tempfile
 import glob
+import os
+import tempfile
 import zipfile
+from pathlib import Path
+from typing import List, Optional, TypedDict
+
 from tqdm.contrib.concurrent import process_map
 
 from .util import (
-    run_command,
+    convert_size_to_bytes,
     file_size,
     human_readable_size,
-    convert_size_to_bytes,
+    run_command,
     which,
 )
 
 
-def _compress_file(args):
-    if (args["is_image"]):
+class FileObj(TypedDict):
+    is_image: bool
+    input: str
+    output: str
+    input_size: int
+    output_size: Optional[int]
+    quality: int
+    transparency: str
+    verbose: bool
+
+
+def _compress_file(file: FileObj):
+    if file["is_image"]:
         # image, use convert (imagemagick)
         cmd = [
             "convert",
             "-quality",
-            str(args["quality"]),
+            str(file["quality"]),
             "-background",
             "white",
             "-alpha",
             "remove",
             "-alpha",
             "off",
-            args["input"] + "[0]",  # add [0] to use only the first page of TIFFs
-            args["output"],
+            file["input"] + "[0]",  # add [0] to use only the first page of TIFFs
+            file["output"],
         ]
     else:
         # video, use ffmpeg
-        cmd = [
-            "ffmpeg",
-            "-i",
-            args["input"],
-            args["output"]
-        ]
-    run_command(cmd, verbose=args["verbose"])
+        cmd = ["ffmpeg", "-i", file["input"], file["output"]]
+    run_command(cmd, verbose=file["verbose"])
 
 
-def _has_transparency(input_file, verbose=False):
+def _has_transparency(input_file: str, verbose=False) -> bool:
     cmd = ["identify", "-format", "%[opaque]", input_file]
     stdout, _ = run_command(cmd, verbose=verbose)
-    if stdout.strip() == "False":
+    if stdout is not None and stdout.strip() == "False":
         return True
+    return False
 
 
 class CompressPptxError(SystemError):
@@ -69,8 +78,26 @@ class CompressPptx:
         force=False,
         compress_media=False,
         recompress_jpeg=False,
-        use_libreoffice=False
+        use_libreoffice=False,
+        num_cpus=1,
     ) -> None:
+        """
+        Compress images in a PowerPoint file.
+
+        Args:
+            input_file (str): Path to input file
+            output_file (str): Path to output file
+            size (int, optional): Minimum size of images to compress. Defaults to 1MiB.
+            quality (int, optional): JPEG quality to use. Defaults to 85.
+            transparency (str, optional): Color to replace transparency with. Defaults to "white".
+            skip_transparent_images (bool, optional): Skip converting transparent images. Defaults to False.
+            verbose (bool, optional): Show additional info. Defaults to False.
+            force (bool, optional): Force overwriting output file. Defaults to False.
+            compress_media (bool, optional): Compress other media types such as audio and video (requires ffmpeg). Defaults to False.
+            recompress_jpeg (bool, optional): Recompress jpeg images. Defaults to False.
+            use_libreoffice (bool, optional): Use LibreOffice to compress EMF files (only way to compress EMF files under Linux). Defaults to False.
+            num_cpus (int, optional): Number of CPUs to use for parallel processing. Defaults to 1.
+        """
         self.input_file = input_file
         self.output_file = output_file
         self.size = int(size)
@@ -79,26 +106,30 @@ class CompressPptx:
         self.skip_transparent_images = bool(skip_transparent_images)
         self.verbose = bool(verbose)
         self.force = bool(force)
-        self.compress_media=compress_media
+        self.compress_media = compress_media
         self.use_libreoffice = use_libreoffice
-        ## file extensions and conversions
-        self.image_extensions = ['.png', '.emf', '.tiff']
-        if recompress_jpeg: self.image_extensions.extend(['.jpg', '.jpeg'])
+        self.num_cpus = num_cpus
+
+        # file extensions and conversions
+        self.image_extensions = [".png", ".emf", ".tiff"]
+        if recompress_jpeg:
+            self.image_extensions.extend([".jpg", ".jpeg"])
         self.converted_image_extension = ".jpg"
 
-        self.video_extensions = ['.mov', '.avi', '.mp4']
+        self.video_extensions = [".mov", ".avi", ".mp4"]
         self.converted_video_extensions = ".mp4"
-        self.audio_extensions = ['.mp3', '.wav']
+        self.audio_extensions = [".mp3", ".wav"]
         self.converted_audio_extensions = ".mp3"
 
-
-        self.file_list = []
+        self.file_list: List[FileObj] = []
 
         required_executables = ["convert", "identify"]
-        ## add ffmpeg to required executables if user wants media files to be compressed
-        if (self.compress_media): required_executables.append("ffmpeg")
-        ## add "unoconv" (libreoffice package) to required executables of user wants emf files compressed
-        if (self.use_libreoffice): required_executables.append("unoconv")
+        # add ffmpeg to required executables if user wants media files to be compressed
+        if self.compress_media:
+            required_executables.append("ffmpeg")
+        # add "unoconv" (libreoffice package) to required executables of user wants emf files compressed
+        if self.use_libreoffice:
+            required_executables.append("unoconv")
 
         for expected_cmd in required_executables:
             if which(expected_cmd) is None:
@@ -157,7 +188,7 @@ class CompressPptx:
             if self.verbose:
                 print(f"Extracted temp files to {self.temp_dir}")
 
-    def _check_endswith(self,filename, extensions):
+    def _check_endswith(self, filename: str, extensions: List[str]) -> bool:
         for ext in extensions:
             if filename.endswith(ext):
                 return True
@@ -173,17 +204,21 @@ class CompressPptx:
             is_image = True
             output_extension = self.converted_image_extension
             # skip unaffected extensions
-            if not (self._check_endswith(file, self.image_extensions)): # is not an image
-                if (self.compress_media): # and is also not a media (and compressing media enabled)
+            if not (
+                self._check_endswith(file, self.image_extensions)
+            ):  # is not an image
+                if (
+                    self.compress_media
+                ):  # and is also not a media (and compressing media enabled)
                     is_image = False
-                    if (self._check_endswith(file, self.video_extensions)):
+                    if self._check_endswith(file, self.video_extensions):
                         output_extension = self.converted_video_extensions
-                    elif (self._check_endswith(file, self.audio_extensions)):
+                    elif self._check_endswith(file, self.audio_extensions):
                         output_extension = self.converted_audio_extensions
                     else:
-                        continue ## file is not a media file
+                        continue  ## file is not a media file
                 else:
-                    continue ## file is not an image
+                    continue  ## file is not an image
 
             # skip files that are too small
             fsize = file_size(file)
@@ -191,11 +226,15 @@ class CompressPptx:
                 # print(f"Skipping {Path(file).name} because it is too small")
                 continue
 
-            if (is_image): # image file
+            if is_image:  # image file
                 # skip files with transparency
-                if self.skip_transparent_images and _has_transparency(file, self.verbose):
+                if self.skip_transparent_images and _has_transparency(
+                    file, self.verbose
+                ):
                     if self.verbose:
-                        print(f"Skipping {Path(file).name} because it contains transparency")
+                        print(
+                            f"Skipping {Path(file).name} because it contains transparency"
+                        )
                     continue
 
             if self.verbose:
@@ -203,22 +242,23 @@ class CompressPptx:
                     f"{Path(file).name} added to conversion queue ({human_readable_size(fsize)})"
                 )
 
-            
+            file_obj: FileObj = {
+                "is_image": is_image,
+                "input": file,
+                "output": (
+                    Path(file).parent
+                    / (Path(file).stem + "-compressed" + output_extension)
+                ).as_posix(),
+                "input_size": fsize,
+                "output_size": None,
+                "quality": self.quality,
+                "transparency": self.transparency,
+                "verbose": self.verbose,
+            }
 
-            self.file_list.append(
-                {
-                    "is_image": is_image,
-                    "input": file,
-                    "output": Path(file).parent / (Path(file).stem + "-compressed"+output_extension),
-                    "input_size": fsize,
-                    "output_size": None,
-                    "quality": self.quality,
-                    "transparency": self.transparency,
-                    "verbose": self.verbose,
-                }
-            )
+            self.file_list.append(file_obj)
 
-    def _libreoffice_compress_files(self, files):
+    def _libreoffice_compress_files(self, files: List[FileObj]):
         for file in files:
             cmd = [
                 "unoconv",
@@ -228,7 +268,7 @@ class CompressPptx:
                 file["output"],
                 file["input"],
             ]
-            run_command(cmd, verbose=file['verbose'])
+            run_command(cmd, verbose=file["verbose"])
 
     def _compress_files(self) -> None:
         if len(self.file_list) == 0:
@@ -240,21 +280,28 @@ class CompressPptx:
                 print(f"Compressing {file['input']} to {file['output']}")
 
         # compress files with "convert" and "ffmpeg" in parallel
-        non_emf_files = [f for f in self.file_list if not f['input'].endswith(".emf")]
+        non_emf_files = [f for f in self.file_list if not f["input"].endswith(".emf")]
         print(f"Compressing {len(non_emf_files)} file(s) ...")
-        process_map(_compress_file, non_emf_files)
+        if self.num_cpus > 1:
+            process_map(_compress_file, non_emf_files, max_workers=self.num_cpus)
+        else:
+            for file in non_emf_files:
+                _compress_file(file)
 
-
-        emf_files = [f for f in self.file_list if f['input'].endswith(".emf")]
-        if (len(emf_files) > 0):
+        emf_files = [f for f in self.file_list if f["input"].endswith(".emf")]
+        if len(emf_files) > 0:
             print(f"Compressing {len(emf_files)} .EMF file(s) ...")
-            if (self.use_libreoffice):
+            if self.use_libreoffice:
                 # compress ".emf" (microsoft) files using libreoffice sequentially
                 # (idk why, but it dosent work in parallel)
                 self._libreoffice_compress_files(emf_files)
             else:
                 # compress ".emf" files using "convert" which works only on windows
-                process_map(_compress_file, emf_files)
+                if self.num_cpus > 1:
+                    process_map(_compress_file, emf_files, max_workers=self.num_cpus)
+                else:
+                    for file in emf_files:
+                        _compress_file(file)
 
         # remove borked files
         warnings = []
@@ -266,10 +313,12 @@ class CompressPptx:
                 output_size = file_size(file["output"])
                 file["output_size"] = output_size
 
-        [self.file_list.remove(w) for w in warnings]
+        for w in warnings:
+            self.file_list.remove(w)
 
         # delete originals
-        [os.remove(f["input"]) for f in self.file_list]
+        for f in self.file_list:
+            os.remove(f["input"])
 
     def _replace_rels(self) -> None:
         if self.temp_dir is None:

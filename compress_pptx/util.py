@@ -73,20 +73,20 @@ def convert_size_to_bytes(size_str):
     """
     multipliers = {
         "kilobyte": 1000,
-        "megabyte": 1000 ** 2,
-        "gigabyte": 1000 ** 3,
+        "megabyte": 1000**2,
+        "gigabyte": 1000**3,
         "k": 1000,
         "kb": 1000,
-        "m": 1000 ** 2,
-        "mb": 1000 ** 2,
-        "g": 1000 ** 3,
-        "gb": 1000 ** 3,
+        "m": 1000**2,
+        "mb": 1000**2,
+        "g": 1000**3,
+        "gb": 1000**3,
         "kibibyte": 1024,
-        "mebibyte": 1024 ** 2,
-        "gibibyte": 1024 ** 3,
+        "mebibyte": 1024**2,
+        "gibibyte": 1024**3,
         "kib": 1024,
-        "mib": 1024 ** 2,
-        "gib": 1024 ** 3,
+        "mib": 1024**2,
+        "gib": 1024**3,
     }
 
     for suffix in multipliers:

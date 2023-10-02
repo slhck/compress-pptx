@@ -84,6 +84,7 @@ def main():
             compress_media=cli_args.compress_media,
             recompress_jpeg=cli_args.recompress_jpeg,
             use_libreoffice=cli_args.use_libreoffice,
+            num_cpus=os.cpu_count(),
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")
