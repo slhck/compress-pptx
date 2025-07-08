@@ -41,7 +41,14 @@ For ffmpeg, use the static builds from [ffmpeg.org](https://ffmpeg.org/downloads
 
 ## Installation
 
-Via pip:
+Simply run it via [uv](https://docs.astral.sh/uv/getting-started/installation/):
+
+```
+uvx compress-pptx
+```
+
+Or install via [pipx](https://pipx.pypa.io/latest/installation/).
+Or manually via pip:
 
 ```
 pip3 install --user compress-pptx
