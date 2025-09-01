@@ -67,6 +67,8 @@ class CompressPptx:
     DEFAULT_SIZE = "1MiB"
     DEFAULT_TRANSPARENCY = "white"
 
+    temp_dir: Optional[str]
+
     def __init__(
         self,
         input_file: str,

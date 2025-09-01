@@ -8,6 +8,16 @@
 
 Compress a PPTX or POTX file, converting all PNG/TIFF images to lossy JPEGs.
 
+**Contents:**
+
+- [What it does](#what-it-does)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Bash Version](#bash-version)
+- [Contributors](#contributors)
+- [License](#license)
+
 ## What it does
 
 When copy-pasting images to PowerPoint presentations, these sometimes get inserted as lossless versions, blowing up the size of the presentation.
@@ -17,13 +27,14 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 :warning: This is not the same as compressing images with PowerPoint's own functionality. You may still need to do this to reduce the size of your presentation!
 
 PNGs containing transparency can be skipped to prevent graphics issues. Normally their transparent parts are replaced with white (although you can choose another color).
+
 ## Requirements
 
 - Operating system: macOS or Linux
   - Note: Under Linux, you need LibreOffice installed to convert embedded EMF files
-- Python 3.8 or higher
+- Python 3.9 or higher
 - ImageMagick's `magick` commands (`magick convert` and `magick identify`)
-- Optionally: `ffmpeg` for media files, and
+- Optionally: `ffmpeg` for media files
 
 Under Ubuntu, get ImageMagick via:
 
@@ -43,14 +54,14 @@ For ffmpeg, use the static builds from [ffmpeg.org](https://ffmpeg.org/downloads
 
 Simply run it via [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
-```
+```bash
 uvx compress-pptx
 ```
 
 Or install via [pipx](https://pipx.pypa.io/latest/installation/).
 Or manually via pip:
 
-```
+```bash
 pip3 install --user compress-pptx
 ```
 
