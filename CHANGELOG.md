@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.9.0 (2025-09-01)
+
+* Bump version to 0.9.0.
+
+* Fix ImageMagick compatibility for both v6 and v7.
+
+  Support both ImageMagick 6.x (convert/identify commands) and 7.x (magick command).
+  The code now automatically detects which version is available and uses the
+  appropriate commands, fixing CI failures on Ubuntu which ships with ImageMagick 6.x.
+
+  🤖 Generated with [Claude Code](https://claude.ai/code)
+
+* Update GH workflow to add imagemagick.
+
+* Fix ruff versions.
+
+
 ## v0.8.4 (2025-09-01)
 
 * Bump version to 0.8.4.
