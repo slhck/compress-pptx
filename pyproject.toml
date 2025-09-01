@@ -38,7 +38,7 @@ compress-pptx = "compress_pptx.__main__:main"
 [dependency-groups]
 dev = [
     "pytest >=8.1.1,<9",
-    "ruff",
+    "ruff>=0.12.11",
     "mypy",
 ]
 
