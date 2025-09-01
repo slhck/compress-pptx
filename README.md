@@ -33,7 +33,7 @@ PNGs containing transparency can be skipped to prevent graphics issues. Normally
 - Operating system: macOS or Linux
   - Note: Under Linux, you need LibreOffice installed to convert embedded EMF files
 - Python 3.9 or higher
-- ImageMagick's `magick` commands (`magick convert` and `magick identify`)
+- ImageMagick (either version 6.x with `convert`/`identify` commands or version 7.x with `magick` command)
 - Optionally: `ffmpeg` for media files
 
 Under Ubuntu, get ImageMagick via:

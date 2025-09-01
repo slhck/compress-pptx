@@ -25,14 +25,13 @@ class FileObj(TypedDict):
     quality: int
     transparency: str
     verbose: bool
+    convert_cmd: List[str]
 
 
 def _compress_file(file: FileObj):
     if file["is_image"]:
         # image, use convert (imagemagick)
-        cmd = [
-            "magick",
-            "convert",
+        cmd = file["convert_cmd"] + [
             "-quality",
             str(file["quality"]),
             "-background",
@@ -50,8 +49,8 @@ def _compress_file(file: FileObj):
     run_command(cmd, verbose=file["verbose"])
 
 
-def _has_transparency(input_file: str, verbose=False) -> bool:
-    cmd = ["magick", "identify", "-format", "%[opaque]", input_file]
+def _has_transparency(input_file: str, identify_cmd: List[str], verbose=False) -> bool:
+    cmd = identify_cmd + ["-format", "%[opaque]", input_file]
     stdout, _ = run_command(cmd, verbose=verbose)
     if stdout is not None and stdout.strip() == "False":
         return True
@@ -126,7 +125,21 @@ class CompressPptx:
 
         self.file_list: List[FileObj] = []
 
-        required_executables = ["magick"]
+        # Check for ImageMagick - prefer 'magick' but fall back to 'convert'/'identify'
+        if which("magick") is not None:
+            self.magick_cmd = "magick"
+            self.convert_cmd = ["magick", "convert"]
+            self.identify_cmd = ["magick", "identify"]
+        elif which("convert") is not None and which("identify") is not None:
+            self.magick_cmd = "convert"
+            self.convert_cmd = ["convert"]
+            self.identify_cmd = ["identify"]
+        else:
+            raise CompressPptxError(
+                "ImageMagick not found in PATH. Make sure you have installed ImageMagick and that either 'magick' or 'convert'/'identify' commands are available."
+            )
+
+        required_executables = []
         # add ffmpeg to required executables if user wants media files to be compressed
         if self.compress_media:
             required_executables.append("ffmpeg")
@@ -137,7 +150,7 @@ class CompressPptx:
         for expected_cmd in required_executables:
             if which(expected_cmd) is None:
                 raise CompressPptxError(
-                    f"ImageMagick '{expected_cmd}' not found in PATH. Make sure you have installed ImageMagick and that the '{expected_cmd}' command is available."
+                    f"'{expected_cmd}' not found in PATH. Make sure you have installed the required software and that the '{expected_cmd}' command is available."
                 )
 
         if self.quality < 0 or self.quality > 100:
@@ -232,7 +245,7 @@ class CompressPptx:
             if is_image:  # image file
                 # skip files with transparency
                 if self.skip_transparent_images and _has_transparency(
-                    file, self.verbose
+                    file, self.identify_cmd, self.verbose
                 ):
                     if self.verbose:
                         print(
@@ -257,6 +270,7 @@ class CompressPptx:
                 "quality": self.quality,
                 "transparency": self.transparency,
                 "verbose": self.verbose,
+                "convert_cmd": self.convert_cmd,
             }
 
             self.file_list.append(file_obj)
