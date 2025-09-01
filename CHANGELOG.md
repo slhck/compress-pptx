@@ -1,6 +1,21 @@
 # Changelog
 
 
+## v0.8.4 (2025-09-01)
+
+* Bump version to 0.8.4.
+
+* Migrate to uv and modern package structure.
+
+* Add uv to readme.
+
+* Set python_requires to >=3.9.
+
+* Changed license specifier.
+
+* Removed wheel settings from setup.cfg.
+
+
 ## v0.8.3 (2023-10-02)
 
 * Migrate to magick commands.
