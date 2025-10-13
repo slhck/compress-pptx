@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.10.0 (2025-10-13)
+
+* Bump version to 0.10.0.
+
+* Feat: always print compressed size and gains.
+
+
 ## v0.9.0 (2025-09-01)
 
 * Bump version to 0.9.0.
