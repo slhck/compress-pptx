@@ -194,8 +194,8 @@ class CompressPptx:
             # Zip back
             self._zip()
 
-        if self.verbose:
-            self._print_stats()
+        # Always print stats to show compression results
+        self._print_stats()
 
     def _unzip(self) -> None:
         print("Extracting file ...")
