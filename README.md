@@ -14,7 +14,6 @@ Compress a PPTX or POTX file, converting all PNG/TIFF images to lossy JPEGs.
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Bash Version](#bash-version)
 - [Contributors](#contributors)
 - [License](#license)
 
@@ -104,9 +103,23 @@ options:
   --num-cpus NUM_CPUS   Number of CPUs to use (default: all available CPUs)
 ```
 
-## Bash Version
+For example, to compress `presentation.pptx` and output to `presentation-compressed.pptx` with a quality of 75:
 
-There's an unmaintained Bash version under `bash/compress-pptx.sh`.
+```bash
+compress-pptx -o presentation-compressed.pptx -q 75 presentation.pptx
+```
+
+If you have `ffmpeg` installed, you can also compress audio and video files embedded in the presentation with the `-m` flag:
+
+```bash
+compress-pptx -m presentation.pptx
+```
+
+If you have **transparent images** and they end up looking weird (e.g., they get a white background), skip converting them with the `-k` flag:
+
+```bash
+compress-pptx -k presentation.pptx
+```
 
 ## Contributors
 
@@ -130,7 +143,7 @@ There's an unmaintained Bash version under `bash/compress-pptx.sh`.
 
 MIT License
 
-Copyright (c) 2021-2023 Werner Robitza
+Copyright (c) 2021-2025 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
