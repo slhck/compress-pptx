@@ -32,15 +32,12 @@ def _compress_file(file: FileObj):
     if file["is_image"]:
         # image, use convert (imagemagick)
         cmd = file["convert_cmd"] + [
+            file["input"] + "[0]",  # add [0] to use only the first page of TIFFs
+            "-background",
+            file["transparency"],
+            "-flatten",
             "-quality",
             str(file["quality"]),
-            "-background",
-            "white",
-            "-alpha",
-            "remove",
-            "-alpha",
-            "off",
-            file["input"] + "[0]",  # add [0] to use only the first page of TIFFs
             file["output"],
         ]
     else:

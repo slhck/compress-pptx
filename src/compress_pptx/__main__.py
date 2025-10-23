@@ -34,11 +34,12 @@ def main():
         default=CompressPptx.DEFAULT_TRANSPARENCY,
     )
     parser.add_argument(
-        "-k",
-        "--skip-transparent-images",
-        action="store_true",
-        help="Skip converting transparent images at all",
+        "--no-skip-transparent-images",
+        dest="skip_transparent_images",
+        action="store_false",
+        help="Convert transparent images to JPEG (will replace transparency with background color). By default, transparent images are skipped to preserve transparency.",
     )
+    parser.set_defaults(skip_transparent_images=True)
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show additional info"
     )

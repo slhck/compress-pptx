@@ -25,7 +25,7 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 
 :warning: This is not the same as compressing images with PowerPoint's own functionality. You may still need to do this to reduce the size of your presentation!
 
-PNGs containing transparency can be skipped to prevent graphics issues. Normally their transparent parts are replaced with white (although you can choose another color).
+**By default, PNGs containing transparency are automatically skipped** to prevent graphics issues (since JPEG doesn't support transparency). If you want to force conversion of transparent images anyway, their transparent parts will be replaced with white (although you can choose another color with `-t`).
 
 ## Requirements
 
@@ -72,7 +72,8 @@ For more options, see the `-h` output:
 
 ```
 usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
-                     [-k] [-v] [-f] [-m] [-j] [-l] [--num-cpus NUM_CPUS]
+                     [--no-skip-transparent-images] [-v] [-f] [-m] [-j] [-l]
+                     [--num-cpus NUM_CPUS]
                      input
 
 positional arguments:
@@ -88,9 +89,10 @@ options:
                         JPEG output quality (0-100) (default: 85)
   -t TRANSPARENCY, --transparency TRANSPARENCY
                         Replace transparency with color (default: white)
-  -k, --skip-transparent-images
-                        Skip converting transparent images at all (default:
-                        False)
+  --no-skip-transparent-images
+                        Convert transparent images to JPEG (will replace
+                        transparency with background color). By default,
+                        transparent images are skipped to preserve transparency.
   -v, --verbose         Show additional info (default: False)
   -f, --force           Force overwriting output file (default: False)
   -m, --compress-media  Compress other media types such as audio and video
@@ -115,10 +117,10 @@ If you have `ffmpeg` installed, you can also compress audio and video files embe
 compress-pptx -m presentation.pptx
 ```
 
-If you have **transparent images** and they end up looking weird (e.g., they get a white background), skip converting them with the `-k` flag:
+Transparent images are automatically skipped by default to preserve transparency. If you want to **force conversion of transparent images** to JPEG (replacing transparency with a background color), use the `--no-skip-transparent-images` flag:
 
 ```bash
-compress-pptx -k presentation.pptx
+compress-pptx --no-skip-transparent-images presentation.pptx
 ```
 
 ## Contributors
