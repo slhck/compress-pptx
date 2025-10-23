@@ -1,3 +1,13 @@
+## [1.0.0] - 2025-10-23
+
+### 🐛 Bug Fixes
+
+- [**breaking**] Disable converting transparent images by default
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove bash version, update readme
+- Bump version to 1.0.0
 ## [0.10.1] - 2025-10-17
 
 ### ⚙️ Miscellaneous Tasks
