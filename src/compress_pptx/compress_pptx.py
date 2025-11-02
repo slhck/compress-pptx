@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 import tempfile
 import zipfile
 from pathlib import Path
@@ -79,9 +80,10 @@ class CompressPptx:
         recompress_jpeg=False,
         use_libreoffice=False,
         num_cpus=1,
+        extract_dir=None,
     ) -> None:
         """
-        Compress images in a PowerPoint file.
+        Compress images in a PowerPoint file or extract media.
 
         Args:
             input_file (str): Path to input file
@@ -96,6 +98,7 @@ class CompressPptx:
             recompress_jpeg (bool, optional): Recompress jpeg images. Defaults to False.
             use_libreoffice (bool, optional): Use LibreOffice to compress EMF files (only way to compress EMF files under Linux). Defaults to False.
             num_cpus (int, optional): Number of CPUs to use for parallel processing. Defaults to 1.
+            extract_dir (str, optional): Directory to extract media files to. If set, extraction mode is enabled instead of compression. Defaults to None.
         """
         self.input_file = input_file
         self.output_file = output_file
@@ -108,6 +111,7 @@ class CompressPptx:
         self.compress_media = compress_media
         self.use_libreoffice = use_libreoffice
         self.num_cpus = num_cpus
+        self.extract_dir = extract_dir
 
         # file extensions and conversions
         self.image_extensions = [".png", ".emf", ".tiff"]
@@ -162,37 +166,76 @@ class CompressPptx:
         ):
             raise CompressPptxError("Input must be a PPTX or POTX file!")
 
-        if Path(self.output_file).exists() and not self.force:
-            raise CompressPptxError(
-                f"Output file {self.output_file} already exists. Use -f/--force to force overwriting."
-            )
+        if self.extract_dir is None:
+            # Only validate output file for compression mode
+            if Path(self.output_file).exists() and not self.force:
+                raise CompressPptxError(
+                    f"Output file {self.output_file} already exists. Use -f/--force to force overwriting."
+                )
 
         self.temp_dir = None
 
     def run(self) -> None:
-        if self.verbose:
-            print(f"Converting {self.input_file} to {self.output_file}")
+        if self.extract_dir is not None:
+            # Extraction mode
+            self._extract_media()
+        else:
+            # Compression mode
+            if self.verbose:
+                print(f"Converting {self.input_file} to {self.output_file}")
 
+            with tempfile.TemporaryDirectory() as temp_dir:
+                self.temp_dir = temp_dir
+
+                # Unzip
+                self._unzip()
+
+                # Collect compressible files
+                self._find_files()
+
+                # Compress
+                self._compress_files()
+
+                # Replace rels
+                self._replace_rels()
+
+                # Zip back
+                self._zip()
+
+            # Always print stats to show compression results
+            self._print_stats()
+
+    def _extract_media(self) -> None:
+        """Extract all media files from the presentation to the specified directory."""
+        if self.extract_dir is None:
+            raise RuntimeError("Extract directory not set!")
+
+        # Create output directory if it doesn't exist
+        extract_path = Path(self.extract_dir)
+        extract_path.mkdir(parents=True, exist_ok=True)
+
+        if self.verbose:
+            print(f"Extracting media from {self.input_file} to {self.extract_dir}")
+
+        extracted_count = 0
         with tempfile.TemporaryDirectory() as temp_dir:
             self.temp_dir = temp_dir
 
             # Unzip
             self._unzip()
 
-            # Collect compressible files
-            self._find_files()
+            # Find and copy all media files
+            media_dir = Path(self.temp_dir) / "ppt" / "media"
+            if media_dir.exists():
+                for media_file in media_dir.glob("*"):
+                    if media_file.is_file():
+                        dest_file = extract_path / media_file.name
+                        shutil.copy2(media_file, dest_file)
+                        if self.verbose:
+                            print(f"Extracted: {media_file.name}")
+                        extracted_count += 1
 
-            # Compress
-            self._compress_files()
-
-            # Replace rels
-            self._replace_rels()
-
-            # Zip back
-            self._zip()
-
-        # Always print stats to show compression results
-        self._print_stats()
+        print(f"Extracted {extracted_count} media file(s) to: {self.extract_dir}")
 
     def _unzip(self) -> None:
         print("Extracting file ...")

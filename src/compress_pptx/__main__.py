@@ -67,6 +67,12 @@ def main():
         help="Number of CPUs to use (default: all available CPUs)",
         default=os.cpu_count() or 1,
     )
+    parser.add_argument(
+        "--extract",
+        type=str,
+        help="Extract all media from the presentation to the specified directory",
+        default=None,
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -92,6 +98,7 @@ def main():
             recompress_jpeg=cli_args.recompress_jpeg,
             use_libreoffice=cli_args.use_libreoffice,
             num_cpus=cli_args.num_cpus,
+            extract_dir=cli_args.extract,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")

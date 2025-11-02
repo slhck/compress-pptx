@@ -73,7 +73,7 @@ For more options, see the `-h` output:
 ```
 usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
                      [--no-skip-transparent-images] [-v] [-f] [-m] [-j] [-l]
-                     [--num-cpus NUM_CPUS]
+                     [--num-cpus NUM_CPUS] [--extract EXTRACT]
                      input
 
 positional arguments:
@@ -103,6 +103,8 @@ options:
                         Use LibreOffice to compress EMF files (only way to
                         compress EMF files under Linux) (default: False)
   --num-cpus NUM_CPUS   Number of CPUs to use (default: all available CPUs)
+  --extract EXTRACT     Extract all media from the presentation to the
+                        specified directory (default: None)
 ```
 
 For example, to compress `presentation.pptx` and output to `presentation-compressed.pptx` with a quality of 75:
@@ -122,6 +124,16 @@ Transparent images are automatically skipped by default to preserve transparency
 ```bash
 compress-pptx --no-skip-transparent-images presentation.pptx
 ```
+
+### Extracting media
+
+To extract all media files from a presentation, use the `--extract` option with a directory path:
+
+```bash
+compress-pptx --extract ./media presentation.pptx
+```
+
+This will create the `media` directory (if it doesn't exist) and extract all images, audio, and video files from the presentation into it.
 
 ## Contributors
 
