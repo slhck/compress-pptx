@@ -1,3 +1,13 @@
+## [1.1.0] - 2025-11-02
+
+### 🚀 Features
+
+- Add --extract option to extract media
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove gitchangelog templates
+- Bump version to 1.1.0
 ## [1.0.0] - 2025-10-23
 
 ### 🐛 Bug Fixes
