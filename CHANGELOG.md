@@ -1,3 +1,12 @@
+## [1.1.1] - 2025-12-01
+
+### 🐛 Bug Fixes
+
+- Exit with code 1 on failure
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 1.1.1
 ## [1.1.0] - 2025-11-02
 
 ### 🚀 Features
