@@ -1,3 +1,12 @@
+## [1.2.0] - 2025-12-18
+
+### 🚀 Features
+
+- Progress for media files and ffmpeg options
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 1.2.0
 ## [1.1.1] - 2025-12-01
 
 ### 🐛 Bug Fixes
