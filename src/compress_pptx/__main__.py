@@ -73,6 +73,30 @@ def main():
         help="Extract all media from the presentation to the specified directory",
         default=None,
     )
+    parser.add_argument(
+        "--ffmpeg-crf",
+        type=int,
+        help="FFmpeg CRF value for video encoding (e.g., 23 for libx264)",
+        default=None,
+    )
+    parser.add_argument(
+        "--ffmpeg-video-codec",
+        type=str,
+        help="FFmpeg video codec (e.g., libx264 for best PowerPoint compatibility)",
+        default=None,
+    )
+    parser.add_argument(
+        "--ffmpeg-audio-codec",
+        type=str,
+        help="FFmpeg audio codec (e.g., aac, libopus, libmp3lame)",
+        default=None,
+    )
+    parser.add_argument(
+        "--ffmpeg-extra-options",
+        type=str,
+        help="Extra FFmpeg options as a single string (e.g., '-preset slow -tune stillimage')",
+        default=None,
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -99,6 +123,10 @@ def main():
             use_libreoffice=cli_args.use_libreoffice,
             num_cpus=cli_args.num_cpus,
             extract_dir=cli_args.extract,
+            ffmpeg_crf=cli_args.ffmpeg_crf,
+            ffmpeg_video_codec=cli_args.ffmpeg_video_codec,
+            ffmpeg_audio_codec=cli_args.ffmpeg_audio_codec,
+            ffmpeg_extra_options=cli_args.ffmpeg_extra_options,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")

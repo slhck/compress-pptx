@@ -14,6 +14,8 @@ Compress a PPTX or POTX file, converting all PNG/TIFF images to lossy JPEGs.
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Extracting media](#extracting-media)
+  - [FFmpeg encoding options](#ffmpeg-encoding-options)
 - [Contributors](#contributors)
 - [License](#license)
 
@@ -74,6 +76,10 @@ For more options, see the `-h` output:
 usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
                      [--no-skip-transparent-images] [-v] [-f] [-m] [-j] [-l]
                      [--num-cpus NUM_CPUS] [--extract EXTRACT]
+                     [--ffmpeg-crf FFMPEG_CRF]
+                     [--ffmpeg-video-codec FFMPEG_VIDEO_CODEC]
+                     [--ffmpeg-audio-codec FFMPEG_AUDIO_CODEC]
+                     [--ffmpeg-extra-options FFMPEG_EXTRA_OPTIONS]
                      input
 
 positional arguments:
@@ -105,6 +111,18 @@ options:
   --num-cpus NUM_CPUS   Number of CPUs to use (default: all available CPUs)
   --extract EXTRACT     Extract all media from the presentation to the
                         specified directory (default: None)
+  --ffmpeg-crf FFMPEG_CRF
+                        FFmpeg CRF value for video encoding (e.g., 23 for
+                        libx264) (default: None)
+  --ffmpeg-video-codec FFMPEG_VIDEO_CODEC
+                        FFmpeg video codec (e.g., libx264 for best PowerPoint
+                        compatibility) (default: None)
+  --ffmpeg-audio-codec FFMPEG_AUDIO_CODEC
+                        FFmpeg audio codec (e.g., aac, libopus, libmp3lame)
+                        (default: None)
+  --ffmpeg-extra-options FFMPEG_EXTRA_OPTIONS
+                        Extra FFmpeg options as a single string (e.g.,
+                        '-preset slow -tune stillimage') (default: None)
 ```
 
 For example, to compress `presentation.pptx` and output to `presentation-compressed.pptx` with a quality of 75:
@@ -134,6 +152,28 @@ compress-pptx --extract ./media presentation.pptx
 ```
 
 This will create the `media` directory (if it doesn't exist) and extract all images, audio, and video files from the presentation into it.
+
+### FFmpeg encoding options
+
+When using `-m` to compress media files, you can customize the FFmpeg encoding settings:
+
+```bash
+compress-pptx -m --ffmpeg-video-codec libx265 --ffmpeg-crf 34 presentation.pptx
+```
+
+Note that the default is `libx264` and CRF 23.
+
+You can pass additional FFmpeg options using `--ffmpeg-extra-options`:
+
+```bash
+compress-pptx -m --ffmpeg-video-codec libx264 --ffmpeg-extra-options '-preset slow -tune stillimage' presentation.pptx
+```
+
+To see available options for a specific encoder, run:
+
+```bash
+ffmpeg -h encoder=libx264
+```
 
 ## Contributors
 

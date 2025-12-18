@@ -16,6 +16,7 @@ name = "compress-pptx"
 version = "1.1.1"
 source = { editable = "." }
 dependencies = [
+    { name = "ffmpeg-progress-yield" },
     { name = "tqdm" },
 ]
 
@@ -27,7 +28,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "tqdm" }]
+requires-dist = [
+    { name = "ffmpeg-progress-yield", specifier = ">=0.11.0" },
+    { name = "tqdm" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -46,6 +50,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0b/9f/a65090624ecf468cdca03533906e7c69ed7588582240cfe7cc9e770b50eb/exceptiongroup-1.3.0.tar.gz", hash = "sha256:b241f5885f560bc56a59ee63ca4c6a8bfa46ae4ad651af316d4e81817bb9fd88", size = 29749, upload-time = "2025-05-10T17:42:51.123Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/36/f4/c6e662dade71f56cd2f3735141b265c3c79293c109549c1e6933b0651ffc/exceptiongroup-1.3.0-py3-none-any.whl", hash = "sha256:4d111e6e0c13d0644cad6ddaa7ed0261a0b36971f6d23e7ec9b4b9097da78a10", size = 16674, upload-time = "2025-05-10T17:42:49.33Z" },
+]
+
+[[package]]
+name = "ffmpeg-progress-yield"
+version = "1.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/3c/9fc79e3a22a040f30b316f1afa115a08379ba4a6e7789d99691f6a31a10c/ffmpeg_progress_yield-1.0.5.tar.gz", hash = "sha256:cee7e274b292dbfbc500d22d2e3a432416146d602214cb25cba149f7e30dbe6c", size = 9752, upload-time = "2025-11-09T19:16:13.504Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/a7/a766ea8238f7e2ae43d771982bcde84a585a40bf47b58e5b0fc777d24ab0/ffmpeg_progress_yield-1.0.5-py3-none-any.whl", hash = "sha256:46f8e6223242920c9ffe5710acbf75b64bc171c9e714b27ccf97df8814229e3a", size = 12464, upload-time = "2025-11-09T19:16:12.189Z" },
 ]
 
 [[package]]

@@ -6,6 +6,8 @@ import zipfile
 from pathlib import Path
 from typing import List, Optional, TypedDict
 
+from ffmpeg_progress_yield import FfmpegProgress
+from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
 from .util import (
@@ -27,24 +29,67 @@ class FileObj(TypedDict):
     transparency: str
     verbose: bool
     convert_cmd: List[str]
+    ffmpeg_crf: Optional[int]
+    ffmpeg_video_codec: Optional[str]
+    ffmpeg_audio_codec: Optional[str]
+    ffmpeg_extra_options: Optional[str]
 
 
-def _compress_file(file: FileObj):
-    if file["is_image"]:
-        # image, use convert (imagemagick)
-        cmd = file["convert_cmd"] + [
-            file["input"] + "[0]",  # add [0] to use only the first page of TIFFs
-            "-background",
-            file["transparency"],
-            "-flatten",
-            "-quality",
-            str(file["quality"]),
-            file["output"],
-        ]
-    else:
-        # video, use ffmpeg
-        cmd = ["ffmpeg", "-i", file["input"], file["output"]]
+def _compress_image(file: FileObj):
+    """Compress an image file using ImageMagick."""
+    cmd = file["convert_cmd"] + [
+        file["input"] + "[0]",  # add [0] to use only the first page of TIFFs
+        "-background",
+        file["transparency"],
+        "-flatten",
+        "-quality",
+        str(file["quality"]),
+        file["output"],
+    ]
     run_command(cmd, verbose=file["verbose"])
+
+
+def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None:
+    """Compress a video file using ffmpeg with progress reporting."""
+    import shlex
+
+    cmd = ["ffmpeg", "-i", file["input"]]
+
+    # Add video codec if specified
+    if file["ffmpeg_video_codec"]:
+        cmd.extend(["-codec:v", file["ffmpeg_video_codec"]])
+
+    # Add CRF if specified
+    if file["ffmpeg_crf"] is not None:
+        cmd.extend(["-crf", str(file["ffmpeg_crf"])])
+
+    # Add audio codec if specified
+    if file["ffmpeg_audio_codec"]:
+        cmd.extend(["-codec:a", file["ffmpeg_audio_codec"]])
+
+    # Add extra options if specified (parse the string into arguments)
+    if file["ffmpeg_extra_options"]:
+        extra_args = shlex.split(file["ffmpeg_extra_options"])
+        cmd.extend(extra_args)
+
+    cmd.extend(["-y", file["output"]])
+
+    if file["verbose"]:
+        print(" ".join([shlex.quote(str(c)) for c in cmd]))
+
+    ff = FfmpegProgress(cmd)
+    filename = Path(file["input"]).name
+    with tqdm(
+        total=100,
+        desc=f"  {filename}",
+        unit="%",
+        position=pbar_position,
+        leave=False,
+        bar_format="{desc}: {percentage:3.0f}%|{bar}| [{elapsed}<{remaining}]",
+    ) as pbar:
+        for progress in ff.run_command_with_progress():
+            pbar.n = progress
+            pbar.refresh()
 
 
 def _has_transparency(input_file: str, identify_cmd: List[str], verbose=False) -> bool:
@@ -81,6 +126,10 @@ class CompressPptx:
         use_libreoffice=False,
         num_cpus=1,
         extract_dir=None,
+        ffmpeg_crf: Optional[int] = None,
+        ffmpeg_video_codec: Optional[str] = None,
+        ffmpeg_audio_codec: Optional[str] = None,
+        ffmpeg_extra_options: Optional[str] = None,
     ) -> None:
         """
         Compress images in a PowerPoint file or extract media.
@@ -99,6 +148,10 @@ class CompressPptx:
             use_libreoffice (bool, optional): Use LibreOffice to compress EMF files (only way to compress EMF files under Linux). Defaults to False.
             num_cpus (int, optional): Number of CPUs to use for parallel processing. Defaults to 1.
             extract_dir (str, optional): Directory to extract media files to. If set, extraction mode is enabled instead of compression. Defaults to None.
+            ffmpeg_crf (int, optional): FFmpeg CRF value for video encoding. Defaults to None.
+            ffmpeg_video_codec (str, optional): FFmpeg video codec. Defaults to None.
+            ffmpeg_audio_codec (str, optional): FFmpeg audio codec. Defaults to None.
+            ffmpeg_extra_options (str, optional): Extra FFmpeg options as a string. Defaults to None.
         """
         self.input_file = input_file
         self.output_file = output_file
@@ -112,6 +165,10 @@ class CompressPptx:
         self.use_libreoffice = use_libreoffice
         self.num_cpus = num_cpus
         self.extract_dir = extract_dir
+        self.ffmpeg_crf = ffmpeg_crf
+        self.ffmpeg_video_codec = ffmpeg_video_codec
+        self.ffmpeg_audio_codec = ffmpeg_audio_codec
+        self.ffmpeg_extra_options = ffmpeg_extra_options
 
         # file extensions and conversions
         self.image_extensions = [".png", ".emf", ".tiff"]
@@ -311,6 +368,10 @@ class CompressPptx:
                 "transparency": self.transparency,
                 "verbose": self.verbose,
                 "convert_cmd": self.convert_cmd,
+                "ffmpeg_crf": self.ffmpeg_crf,
+                "ffmpeg_video_codec": self.ffmpeg_video_codec,
+                "ffmpeg_audio_codec": self.ffmpeg_audio_codec,
+                "ffmpeg_extra_options": self.ffmpeg_extra_options,
             }
 
             self.file_list.append(file_obj)
@@ -336,29 +397,52 @@ class CompressPptx:
             if self.verbose:
                 print(f"Compressing {file['input']} to {file['output']}")
 
-        # compress files with "magick convert" and "ffmpeg" in parallel
-        non_emf_files = [f for f in self.file_list if not f["input"].endswith(".emf")]
-        print(f"Compressing {len(non_emf_files)} file(s) ...")
-        if self.num_cpus > 1:
-            process_map(_compress_file, non_emf_files, max_workers=self.num_cpus)
-        else:
-            for file in non_emf_files:
-                _compress_file(file)
-
+        # Separate files by type
+        image_files = [
+            f
+            for f in self.file_list
+            if f["is_image"] and not f["input"].endswith(".emf")
+        ]
         emf_files = [f for f in self.file_list if f["input"].endswith(".emf")]
+        media_files = [f for f in self.file_list if not f["is_image"]]
+
+        # Compress image files (non-EMF) with ImageMagick
+        if len(image_files) > 0:
+            print(f"Compressing {len(image_files)} image(s) ...")
+            if self.num_cpus > 1:
+                process_map(_compress_image, image_files, max_workers=self.num_cpus)
+            else:
+                for file in image_files:
+                    _compress_image(file)
+
+        # Compress EMF files
         if len(emf_files) > 0:
             print(f"Compressing {len(emf_files)} .EMF file(s) ...")
             if self.use_libreoffice:
                 # compress ".emf" (microsoft) files using libreoffice sequentially
-                # (idk why, but it dosent work in parallel)
+                # (idk why, but it doesn't work in parallel)
                 self._libreoffice_compress_files(emf_files)
             else:
                 # compress ".emf" files using "magick convert" which works only on windows
                 if self.num_cpus > 1:
-                    process_map(_compress_file, emf_files, max_workers=self.num_cpus)
+                    process_map(_compress_image, emf_files, max_workers=self.num_cpus)
                 else:
                     for file in emf_files:
-                        _compress_file(file)
+                        _compress_image(file)
+
+        # Compress media files (video/audio) with ffmpeg and progress bar
+        if len(media_files) > 0:
+            print(f"Compressing {len(media_files)} media file(s) ...")
+            with tqdm(
+                total=len(media_files),
+                desc="Media files",
+                unit="file",
+                position=0,
+            ) as pbar:
+                for file in media_files:
+                    _compress_video_with_progress(file, pbar_position=1)
+                    pbar.update(1)
+            print()  # newline after progress bars
 
         # remove borked files
         warnings = []
