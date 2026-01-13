@@ -97,6 +97,12 @@ def main():
         help="Extra FFmpeg options as a single string (e.g., '-preset slow -tune stillimage')",
         default=None,
     )
+    parser.add_argument(
+        "--ffmpeg-path",
+        type=str,
+        help="Path to ffmpeg executable",
+        default="ffmpeg",
+    )
     cli_args = parser.parse_args()
 
     basename, _ = os.path.splitext(cli_args.input)
@@ -127,6 +133,7 @@ def main():
             ffmpeg_video_codec=cli_args.ffmpeg_video_codec,
             ffmpeg_audio_codec=cli_args.ffmpeg_audio_codec,
             ffmpeg_extra_options=cli_args.ffmpeg_extra_options,
+            ffmpeg_path=cli_args.ffmpeg_path,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")

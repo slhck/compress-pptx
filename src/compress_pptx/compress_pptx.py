@@ -33,6 +33,7 @@ class FileObj(TypedDict):
     ffmpeg_video_codec: Optional[str]
     ffmpeg_audio_codec: Optional[str]
     ffmpeg_extra_options: Optional[str]
+    ffmpeg_path: str
 
 
 def _compress_image(file: FileObj):
@@ -53,7 +54,7 @@ def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None
     """Compress a video file using ffmpeg with progress reporting."""
     import shlex
 
-    cmd = ["ffmpeg", "-i", file["input"]]
+    cmd = [file["ffmpeg_path"], "-i", file["input"]]
 
     # Add video codec if specified
     if file["ffmpeg_video_codec"]:
@@ -130,6 +131,7 @@ class CompressPptx:
         ffmpeg_video_codec: Optional[str] = None,
         ffmpeg_audio_codec: Optional[str] = None,
         ffmpeg_extra_options: Optional[str] = None,
+        ffmpeg_path: str = "ffmpeg",
     ) -> None:
         """
         Compress images in a PowerPoint file or extract media.
@@ -152,6 +154,7 @@ class CompressPptx:
             ffmpeg_video_codec (str, optional): FFmpeg video codec. Defaults to None.
             ffmpeg_audio_codec (str, optional): FFmpeg audio codec. Defaults to None.
             ffmpeg_extra_options (str, optional): Extra FFmpeg options as a string. Defaults to None.
+            ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
         """
         self.input_file = input_file
         self.output_file = output_file
@@ -169,6 +172,7 @@ class CompressPptx:
         self.ffmpeg_video_codec = ffmpeg_video_codec
         self.ffmpeg_audio_codec = ffmpeg_audio_codec
         self.ffmpeg_extra_options = ffmpeg_extra_options
+        self.ffmpeg_path = ffmpeg_path
 
         # file extensions and conversions
         self.image_extensions = [".png", ".emf", ".tiff"]
@@ -200,7 +204,7 @@ class CompressPptx:
         required_executables = []
         # add ffmpeg to required executables if user wants media files to be compressed
         if self.compress_media:
-            required_executables.append("ffmpeg")
+            required_executables.append(self.ffmpeg_path)
         # add "unoconv" (libreoffice package) to required executables of user wants emf files compressed
         if self.use_libreoffice:
             required_executables.append("unoconv")
@@ -372,6 +376,7 @@ class CompressPptx:
                 "ffmpeg_video_codec": self.ffmpeg_video_codec,
                 "ffmpeg_audio_codec": self.ffmpeg_audio_codec,
                 "ffmpeg_extra_options": self.ffmpeg_extra_options,
+                "ffmpeg_path": self.ffmpeg_path,
             }
 
             self.file_list.append(file_obj)

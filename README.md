@@ -80,6 +80,7 @@ usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
                      [--ffmpeg-video-codec FFMPEG_VIDEO_CODEC]
                      [--ffmpeg-audio-codec FFMPEG_AUDIO_CODEC]
                      [--ffmpeg-extra-options FFMPEG_EXTRA_OPTIONS]
+                     [--ffmpeg-path FFMPEG_PATH]
                      input
 
 positional arguments:
@@ -123,6 +124,8 @@ options:
   --ffmpeg-extra-options FFMPEG_EXTRA_OPTIONS
                         Extra FFmpeg options as a single string (e.g.,
                         '-preset slow -tune stillimage') (default: None)
+  --ffmpeg-path FFMPEG_PATH
+                        Path to ffmpeg executable (default: ffmpeg)
 ```
 
 For example, to compress `presentation.pptx` and output to `presentation-compressed.pptx` with a quality of 75:
