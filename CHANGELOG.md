@@ -1,3 +1,12 @@
+## [1.3.2] - 2026-09-23
+
+### 🐛 Bug Fixes
+
+- *(emf)* Preserve vectors by default
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 1.3.2
 ## [1.3.1] - 2026-03-30
 
 ### ⚙️ Miscellaneous Tasks
