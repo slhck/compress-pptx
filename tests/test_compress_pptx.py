@@ -2,7 +2,9 @@
 
 import os
 import tempfile
+from pathlib import Path
 
+import compress_pptx.compress_pptx as compressor
 from compress_pptx.compress_pptx import CompressPptx
 
 
@@ -53,3 +55,31 @@ def test_extract_creates_directory():
         # Check that media files were extracted
         extracted_files = os.listdir(extract_dir)
         assert len(extracted_files) > 0
+
+
+def test_transparency_check_skips_emf(monkeypatch, tmp_path):
+    media_dir = tmp_path / "ppt" / "media"
+    media_dir.mkdir(parents=True)
+    (media_dir / "image.emf").write_bytes(b"emf")
+    (media_dir / "image.png").write_bytes(b"png")
+    checked = []
+
+    def has_transparency(path, identify_cmd, verbose):
+        checked.append(Path(path).suffix)
+        return False
+
+    monkeypatch.setattr(compressor, "which", lambda command: "/usr/bin/magick")
+    monkeypatch.setattr(compressor, "_has_transparency", has_transparency)
+    input_file = Path(__file__).with_name("test.pptx")
+    job = CompressPptx(
+        str(input_file),
+        str(tmp_path / "output.pptx"),
+        size=0,
+        skip_transparent_images=True,
+    )
+    job.temp_dir = str(tmp_path)
+
+    job._find_files()
+
+    assert checked == [".png"]
+    assert [Path(file["input"]).name for file in job.file_list] == ["image.png"]

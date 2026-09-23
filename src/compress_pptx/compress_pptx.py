@@ -345,8 +345,11 @@ class CompressPptx:
 
             if is_image:  # image file
                 # skip files with transparency
-                if self.skip_transparent_images and _has_transparency(
-                    file, self.identify_cmd, self.verbose
+                # EMF is a vector format; ImageMagick may not be able to decode
+                # it, and converting it to JPEG would discard transparency.
+                if self.skip_transparent_images and (
+                    Path(file).suffix.lower() == ".emf"
+                    or _has_transparency(file, self.identify_cmd, self.verbose)
                 ):
                     if self.verbose:
                         print(

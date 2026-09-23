@@ -27,7 +27,7 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 
 :warning: This is not the same as compressing images with PowerPoint's own functionality. You may still need to do this to reduce the size of your presentation!
 
-**By default, PNGs containing transparency are automatically skipped** to prevent graphics issues (since JPEG doesn't support transparency). If you want to force conversion of transparent images anyway, their transparent parts will be replaced with white (although you can choose another color with `-t`).
+**By default, transparent raster images and EMF vector images are skipped** to prevent graphics issues (since JPEG doesn't support transparency). If you want to force conversion anyway, their transparent parts will be replaced with white (although you can choose another color with `-t`). EMF conversion may also require LibreOffice and `-l` on systems where ImageMagick cannot read EMF files.
 
 ## Requirements
 
