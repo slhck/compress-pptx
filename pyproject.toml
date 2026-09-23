@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "compress_pptx"
-version = "1.3.2"
+version = "1.3.3"
 description = "Compress images in PPTX files"
 readme = "README.md"
 license = "MIT"
