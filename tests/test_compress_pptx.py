@@ -2,21 +2,32 @@
 
 import os
 import tempfile
+import zipfile
 from pathlib import Path
+from xml.etree import ElementTree
 
 import compress_pptx.compress_pptx as compressor
 from compress_pptx.compress_pptx import CompressPptx
 
 
-def test_conversion():
+def test_conversion(tmp_path):
     here = os.path.dirname(__file__)
     input_file = os.path.join(here, "test.pptx")
-    output_file = os.path.join(here, "test-compressed.pptx")
-    if os.path.isfile(output_file):
-        os.remove(output_file)
-    CompressPptx(input_file, output_file).run()
-    assert os.path.isfile(output_file)
-    os.remove(output_file)
+    output_file = tmp_path / "test-compressed.pptx"
+    CompressPptx(input_file, str(output_file), num_cpus=1).run()
+
+    with zipfile.ZipFile(output_file) as archive:
+        names = set(archive.namelist())
+        assert "ppt/media/image1-compressed.jpg" in names
+        assert "ppt/media/image1.png" not in names
+        manifest = ElementTree.fromstring(archive.read("[Content_Types].xml"))
+        namespace = "http://schemas.openxmlformats.org/package/2006/content-types"
+        overrides = {
+            element.get("PartName"): element.get("ContentType")
+            for element in manifest.findall(f"{{{namespace}}}Override")
+        }
+        assert overrides["/ppt/media/image1-compressed.jpg"] == "image/jpeg"
+        assert "/ppt/media/image1.png" not in overrides
 
 
 def test_extract():

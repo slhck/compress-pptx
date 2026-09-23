@@ -5,6 +5,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 from typing import List, Optional, TypedDict
+from xml.etree import ElementTree
 
 from ffmpeg_progress_yield import FfmpegProgress
 from tqdm import tqdm
@@ -260,6 +261,9 @@ class CompressPptx:
                 # Replace rels
                 self._replace_rels()
 
+                # Register the new parts and remove entries for deleted ones
+                self._replace_content_types()
+
                 # Zip back
                 self._zip()
 
@@ -494,6 +498,45 @@ class CompressPptx:
 
             with open(str(file), "w") as f:
                 f.write(content)
+
+    def _replace_content_types(self) -> None:
+        if self.temp_dir is None:
+            raise RuntimeError("Temp dir not created!")
+        if not self.file_list:
+            return
+
+        namespace = "http://schemas.openxmlformats.org/package/2006/content-types"
+        ElementTree.register_namespace("", namespace)
+        manifest = Path(self.temp_dir) / "[Content_Types].xml"
+        tree = ElementTree.parse(manifest)
+        root = tree.getroot()
+        overrides = {
+            element.get("PartName"): element
+            for element in root.findall(f"{{{namespace}}}Override")
+        }
+        content_types = {
+            ".jpg": "image/jpeg",
+            ".mp4": "video/mp4",
+            ".mp3": "audio/mpeg",
+        }
+
+        for file in self.file_list:
+            original_part = "/ppt/media/" + Path(file["input"]).name
+            output_part = "/ppt/media/" + Path(file["output"]).name
+            old_override = overrides.pop(original_part, None)
+            if old_override is not None:
+                root.remove(old_override)
+
+            content_type = content_types[Path(file["output"]).suffix.lower()]
+            new_override = overrides.get(output_part)
+            if new_override is None:
+                new_override = ElementTree.SubElement(
+                    root, f"{{{namespace}}}Override", PartName=output_part
+                )
+                overrides[output_part] = new_override
+            new_override.set("ContentType", content_type)
+
+        tree.write(manifest, encoding="utf-8", xml_declaration=True)
 
     def _zip(self) -> None:
         if self.temp_dir is None:
