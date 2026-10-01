@@ -1,4 +1,8 @@
-# compress-pptx
+<h1 align="center">compress-pptx</h1>
+
+<p align="center">
+  <img src="icon.png" alt="compress-pptx logo" width="160" height="160">
+</p>
 
 [![PyPI version](https://img.shields.io/pypi/v/compress-pptx.svg)](https://pypi.org/project/compress-pptx)
 
