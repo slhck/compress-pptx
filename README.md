@@ -37,7 +37,7 @@ This script takes all PNG or TIFF images part of the presentation which are larg
 
 - Operating system: macOS or Linux
   - Note: Under Linux, you need LibreOffice installed to convert embedded EMF files
-- Python 3.9 or higher
+- Python 3.10 or higher
 - ImageMagick (either version 6.x with `convert`/`identify` commands or version 7.x with `magick` command)
 - Optionally: `ffmpeg` for media files
 
