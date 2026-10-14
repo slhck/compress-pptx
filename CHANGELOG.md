@@ -1,3 +1,15 @@
+## [1.4.0] - 2026-10-14
+
+### 🚀 Features
+
+- *(cli)* Add --dry-run option
+- *(cli)* Show progress bar for image compression
+- *(cli)* Show size savings for converted images
+
+### ⚙️ Miscellaneous Tasks
+
+- Update pre-commit config
+- Bump version to 1.4.0
 ## [1.3.4] - 2026-10-11
 
 ### 🐛 Bug Fixes
