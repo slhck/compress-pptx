@@ -616,8 +616,29 @@ class CompressPptx:
     def _print_stats(self) -> None:
         input_size = file_size(self.input_file)
         output_size = file_size(self.output_file)
-        percentage = round((input_size - output_size) / input_size * 100, 2)
         print(f"Input file:  {human_readable_size(input_size)}")
         print(
-            f"Output file: {human_readable_size(output_size)} ({percentage}% reduction)"
+            f"Output file: {human_readable_size(output_size)} "
+            f"({_percentage_saved(input_size, output_size)}% reduction)"
         )
+
+        for label, files in [
+            ("Images:", [f for f in self.file_list if f["is_image"]]),
+            ("Media:", [f for f in self.file_list if not f["is_image"]]),
+        ]:
+            if not files:
+                continue
+            before = sum(f["input_size"] for f in files)
+            after = sum(f["output_size"] or 0 for f in files)
+            print(
+                f"{label:<12} {len(files)} converted, "
+                f"{human_readable_size(before)} -> {human_readable_size(after)} "
+                f"({_percentage_saved(before, after)}% reduction)"
+            )
+
+
+def _percentage_saved(before: int, after: int) -> float:
+    """Return the size reduction from before to after in percent."""
+    if before == 0:
+        return 0.0
+    return round((before - after) / before * 100, 2)

@@ -141,3 +141,24 @@ def test_compress_with_progress_runs_all_files(capsys):
     assert seen == ["a", "b", "c"]
     # No progress bar without a TTY
     assert "Images" not in capsys.readouterr().err
+
+
+def test_size_summary(tmp_path, capsys):
+    input_file = Path(__file__).with_name("test.pptx")
+    output_file = tmp_path / "test-compressed.pptx"
+    CompressPptx(str(input_file), str(output_file), num_cpus=1).run()
+
+    lines = capsys.readouterr().out.splitlines()
+    assert any(line.startswith("Input file:") for line in lines)
+    assert any(
+        line.startswith("Output file:") and "% reduction" in line for line in lines
+    )
+    images_line = next(line for line in lines if line.startswith("Images:"))
+    assert "1 converted" in images_line
+    assert "-> " in images_line
+    assert "% reduction" in images_line
+
+
+def test_percentage_saved():
+    assert compressor._percentage_saved(200, 50) == 75.0
+    assert compressor._percentage_saved(0, 0) == 0.0
