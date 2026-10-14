@@ -47,6 +47,12 @@ def main():
         "-f", "--force", action="store_true", help="Force overwriting output file"
     )
     parser.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="Show which files would be compressed without writing the output file",
+    )
+    parser.add_argument(
         "-m",
         "--compress-media",
         action="store_true",
@@ -134,6 +140,7 @@ def main():
             ffmpeg_audio_codec=cli_args.ffmpeg_audio_codec,
             ffmpeg_extra_options=cli_args.ffmpeg_extra_options,
             ffmpeg_path=cli_args.ffmpeg_path,
+            dry_run=cli_args.dry_run,
         ).run()
     except CompressPptxError as e:
         print(f"Error: {e}")

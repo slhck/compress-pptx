@@ -1,5 +1,6 @@
 import glob
 import os
+import shlex
 import shutil
 import tempfile
 import zipfile
@@ -35,6 +36,7 @@ class FileObj(TypedDict):
     ffmpeg_audio_codec: Optional[str]
     ffmpeg_extra_options: Optional[str]
     ffmpeg_path: str
+    dry_run: bool
 
 
 def _compress_image(file: FileObj):
@@ -48,13 +50,11 @@ def _compress_image(file: FileObj):
         str(file["quality"]),
         file["output"],
     ]
-    run_command(cmd, verbose=file["verbose"])
+    run_command(cmd, dry_run=file["dry_run"], verbose=file["verbose"])
 
 
-def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None:
-    """Compress a video file using ffmpeg with progress reporting."""
-    import shlex
-
+def _build_ffmpeg_cmd(file: FileObj) -> List[str]:
+    """Build the ffmpeg command for compressing a media file."""
     cmd = [file["ffmpeg_path"], "-i", file["input"]]
 
     # Add video codec if specified
@@ -75,6 +75,12 @@ def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None
         cmd.extend(extra_args)
 
     cmd.extend(["-y", file["output"]])
+    return cmd
+
+
+def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None:
+    """Compress a video file using ffmpeg with progress reporting."""
+    cmd = _build_ffmpeg_cmd(file)
 
     if file["verbose"]:
         print(" ".join([shlex.quote(str(c)) for c in cmd]))
@@ -133,6 +139,7 @@ class CompressPptx:
         ffmpeg_audio_codec: Optional[str] = None,
         ffmpeg_extra_options: Optional[str] = None,
         ffmpeg_path: str = "ffmpeg",
+        dry_run: bool = False,
     ) -> None:
         """
         Compress images in a PowerPoint file or extract media.
@@ -156,6 +163,7 @@ class CompressPptx:
             ffmpeg_audio_codec (str, optional): FFmpeg audio codec. Defaults to None.
             ffmpeg_extra_options (str, optional): Extra FFmpeg options as a string. Defaults to None.
             ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
+            dry_run (bool, optional): Show which files would be compressed without writing the output file. Defaults to False.
         """
         self.input_file = input_file
         self.output_file = output_file
@@ -174,6 +182,7 @@ class CompressPptx:
         self.ffmpeg_audio_codec = ffmpeg_audio_codec
         self.ffmpeg_extra_options = ffmpeg_extra_options
         self.ffmpeg_path = ffmpeg_path
+        self.dry_run = bool(dry_run)
 
         # file extensions and conversions
         self.image_extensions = [".png", ".emf", ".tiff"]
@@ -228,7 +237,7 @@ class CompressPptx:
         ):
             raise CompressPptxError("Input must be a PPTX or POTX file!")
 
-        if self.extract_dir is None:
+        if self.extract_dir is None and not self.dry_run:
             # Only validate output file for compression mode
             if Path(self.output_file).exists() and not self.force:
                 raise CompressPptxError(
@@ -243,7 +252,7 @@ class CompressPptx:
             self._extract_media()
         else:
             # Compression mode
-            if self.verbose:
+            if self.verbose and not self.dry_run:
                 print(f"Converting {self.input_file} to {self.output_file}")
 
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -254,6 +263,10 @@ class CompressPptx:
 
                 # Collect compressible files
                 self._find_files()
+
+                if self.dry_run:
+                    self._print_dry_run()
+                    return
 
                 # Compress
                 self._compress_files()
@@ -319,8 +332,8 @@ class CompressPptx:
         if self.temp_dir is None:
             raise RuntimeError("Temp dir not created!")
 
-        for file in glob.iglob(
-            os.path.join(self.temp_dir, "ppt", "media", "*"), recursive=True
+        for file in sorted(
+            glob.iglob(os.path.join(self.temp_dir, "ppt", "media", "*"), recursive=True)
         ):
             is_image = True
             output_extension = self.converted_image_extension
@@ -355,7 +368,7 @@ class CompressPptx:
                     Path(file).suffix.lower() == ".emf"
                     or _has_transparency(file, self.identify_cmd, self.verbose)
                 ):
-                    if self.verbose:
+                    if self.verbose or self.dry_run:
                         print(
                             f"Skipping {Path(file).name} because it contains transparency"
                         )
@@ -384,6 +397,7 @@ class CompressPptx:
                 "ffmpeg_audio_codec": self.ffmpeg_audio_codec,
                 "ffmpeg_extra_options": self.ffmpeg_extra_options,
                 "ffmpeg_path": self.ffmpeg_path,
+                "dry_run": self.dry_run,
             }
 
             self.file_list.append(file_obj)
@@ -398,7 +412,40 @@ class CompressPptx:
                 file["output"],
                 file["input"],
             ]
-            run_command(cmd, verbose=file["verbose"])
+            run_command(cmd, dry_run=file["dry_run"], verbose=file["verbose"])
+
+    def _describe_action(self, file: FileObj) -> str:
+        """Return a description of the conversion applied to a file."""
+        if not file["is_image"]:
+            return f"re-encode with ffmpeg to {Path(file['output']).suffix[1:].upper()}"
+        if file["input"].endswith(".emf") and self.use_libreoffice:
+            return "convert to JPEG with LibreOffice"
+        return f"convert to JPEG (quality {file['quality']})"
+
+    def _print_dry_run(self) -> None:
+        """Print the files that would be compressed, without compressing them."""
+        if len(self.file_list) == 0:
+            print("Dry run: no files to compress")
+            return
+
+        print(f"Dry run: {len(self.file_list)} file(s) would be compressed:")
+        for file in self.file_list:
+            name = Path(file["input"]).name
+            size = human_readable_size(file["input_size"])
+            target = Path(file["output"]).name
+            print(f"  {name} ({size}): {self._describe_action(file)} -> {target}")
+
+        # Print the commands that would run
+        if self.verbose:
+            for file in self.file_list:
+                if not file["is_image"]:
+                    print(" ".join(shlex.quote(c) for c in _build_ffmpeg_cmd(file)))
+                elif file["input"].endswith(".emf") and self.use_libreoffice:
+                    self._libreoffice_compress_files([file])
+                else:
+                    _compress_image(file)
+
+        print(f"Dry run: no output written (would write to {self.output_file})")
 
     def _compress_files(self) -> None:
         if len(self.file_list) == 0:

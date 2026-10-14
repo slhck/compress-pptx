@@ -78,8 +78,8 @@ For more options, see the `-h` output:
 
 ```
 usage: compress-pptx [-h] [-o OUTPUT] [-s SIZE] [-q QUALITY] [-t TRANSPARENCY]
-                     [--no-skip-transparent-images] [-v] [-f] [-m] [-j] [-l]
-                     [--num-cpus NUM_CPUS] [--extract EXTRACT]
+                     [--no-skip-transparent-images] [-v] [-f] [-n] [-m] [-j]
+                     [-l] [--num-cpus NUM_CPUS] [--extract EXTRACT]
                      [--ffmpeg-crf FFMPEG_CRF]
                      [--ffmpeg-video-codec FFMPEG_VIDEO_CODEC]
                      [--ffmpeg-audio-codec FFMPEG_AUDIO_CODEC]
@@ -106,6 +106,8 @@ options:
                         transparent images are skipped to preserve transparency.
   -v, --verbose         Show additional info (default: False)
   -f, --force           Force overwriting output file (default: False)
+  -n, --dry-run         Show which files would be compressed without writing
+                        the output file (default: False)
   -m, --compress-media  Compress other media types such as audio and video
                         (requires ffmpeg) (default: False)
   -j, --recompress-jpeg
@@ -143,6 +145,14 @@ If you have `ffmpeg` installed, you can also compress audio and video files embe
 ```bash
 compress-pptx -m presentation.pptx
 ```
+
+To see which images would be compressed without writing anything, use `-n`/`--dry-run`:
+
+```bash
+compress-pptx -n presentation.pptx
+```
+
+This lists each file with its current size and the planned conversion. Add `-v` to also print the commands that would run.
 
 Transparent images are automatically skipped by default to preserve transparency. If you want to **force conversion of transparent images** to JPEG (replacing transparency with a background color), use the `--no-skip-transparent-images` flag:
 

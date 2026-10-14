@@ -94,3 +94,37 @@ def test_transparency_check_skips_emf(monkeypatch, tmp_path):
 
     assert checked == [".png"]
     assert [Path(file["input"]).name for file in job.file_list] == ["image.png"]
+
+
+def test_dry_run(monkeypatch, tmp_path, capsys):
+    input_file = Path(__file__).with_name("test.pptx")
+    output_file = tmp_path / "test-compressed.pptx"
+    calls = []
+    original_run_command = compressor.run_command
+
+    def run_command(cmd, dry_run=False, verbose=False):
+        calls.append((cmd, dry_run))
+        return original_run_command(cmd, dry_run=dry_run, verbose=verbose)
+
+    monkeypatch.setattr(compressor, "run_command", run_command)
+    CompressPptx(str(input_file), str(output_file), verbose=True, dry_run=True).run()
+
+    assert not output_file.exists()
+    out = capsys.readouterr().out
+    assert "image1.png" in out
+    assert "convert to JPEG" in out
+    assert "no output written" in out
+    # Conversion commands are only printed, not executed
+    convert_calls = [c for c in calls if "identify" not in c[0]]
+    assert convert_calls
+    assert all(dry_run for _, dry_run in convert_calls)
+
+
+def test_dry_run_ignores_existing_output(tmp_path):
+    input_file = Path(__file__).with_name("test.pptx")
+    output_file = tmp_path / "existing.pptx"
+    output_file.write_bytes(b"keep")
+
+    CompressPptx(str(input_file), str(output_file), dry_run=True).run()
+
+    assert output_file.read_bytes() == b"keep"
