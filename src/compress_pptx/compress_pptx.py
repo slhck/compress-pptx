@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import List, Optional, TypedDict
+from typing import Callable, List, Optional, TypedDict
 from xml.etree import ElementTree
 
 from ffmpeg_progress_yield import FfmpegProgress
@@ -83,7 +83,7 @@ def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None
     cmd = _build_ffmpeg_cmd(file)
 
     if file["verbose"]:
-        print(" ".join([shlex.quote(str(c)) for c in cmd]))
+        tqdm.write(" ".join([shlex.quote(str(c)) for c in cmd]))
 
     ff = FfmpegProgress(cmd)
     filename = Path(file["input"]).name
@@ -94,6 +94,7 @@ def _compress_video_with_progress(file: FileObj, pbar_position: int = 1) -> None
         position=pbar_position,
         leave=False,
         bar_format="{desc}: {percentage:3.0f}%|{bar}| [{elapsed}<{remaining}]",
+        disable=None,
     ) as pbar:
         for progress in ff.run_command_with_progress():
             pbar.n = progress
@@ -447,6 +448,29 @@ class CompressPptx:
 
         print(f"Dry run: no output written (would write to {self.output_file})")
 
+    def _compress_with_progress(
+        self, func: Callable[[FileObj], None], files: List[FileObj], desc: str
+    ) -> None:
+        """
+        Run func on each file with a progress bar, in parallel if num_cpus > 1.
+
+        The progress bar is hidden if stderr is not a TTY, and in verbose mode with
+        parallel processing, since worker processes print their commands directly.
+        """
+        disable = True if self.verbose and self.num_cpus > 1 else None
+        if self.num_cpus > 1:
+            process_map(
+                func,
+                files,
+                max_workers=self.num_cpus,
+                desc=desc,
+                unit="file",
+                disable=disable,
+            )
+        else:
+            for file in tqdm(files, desc=desc, unit="file", disable=disable):
+                func(file)
+
     def _compress_files(self) -> None:
         if len(self.file_list) == 0:
             print("No Files to compress!")
@@ -468,11 +492,7 @@ class CompressPptx:
         # Compress image files (non-EMF) with ImageMagick
         if len(image_files) > 0:
             print(f"Compressing {len(image_files)} image(s) ...")
-            if self.num_cpus > 1:
-                process_map(_compress_image, image_files, max_workers=self.num_cpus)
-            else:
-                for file in image_files:
-                    _compress_image(file)
+            self._compress_with_progress(_compress_image, image_files, "Images")
 
         # Compress EMF files
         if len(emf_files) > 0:
@@ -483,11 +503,7 @@ class CompressPptx:
                 self._libreoffice_compress_files(emf_files)
             else:
                 # compress ".emf" files using "magick convert" which works only on windows
-                if self.num_cpus > 1:
-                    process_map(_compress_image, emf_files, max_workers=self.num_cpus)
-                else:
-                    for file in emf_files:
-                        _compress_image(file)
+                self._compress_with_progress(_compress_image, emf_files, "EMF files")
 
         # Compress media files (video/audio) with ffmpeg and progress bar
         if len(media_files) > 0:
@@ -497,6 +513,7 @@ class CompressPptx:
                 desc="Media files",
                 unit="file",
                 position=0,
+                disable=None,
             ) as pbar:
                 for file in media_files:
                     _compress_video_with_progress(file, pbar_position=1)

@@ -128,3 +128,16 @@ def test_dry_run_ignores_existing_output(tmp_path):
     CompressPptx(str(input_file), str(output_file), dry_run=True).run()
 
     assert output_file.read_bytes() == b"keep"
+
+
+def test_compress_with_progress_runs_all_files(capsys):
+    input_file = Path(__file__).with_name("test.pptx")
+    job = CompressPptx(str(input_file), str(input_file), num_cpus=1, dry_run=True)
+    files = [{"input": "a"}, {"input": "b"}, {"input": "c"}]
+    seen = []
+
+    job._compress_with_progress(lambda f: seen.append(f["input"]), files, "Images")  # type: ignore[arg-type]
+
+    assert seen == ["a", "b", "c"]
+    # No progress bar without a TTY
+    assert "Images" not in capsys.readouterr().err

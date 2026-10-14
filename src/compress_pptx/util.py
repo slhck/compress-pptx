@@ -4,6 +4,8 @@ from pathlib import Path
 import os
 import sys
 
+from tqdm import tqdm
+
 
 def which(program):
     """
@@ -52,7 +54,8 @@ def run_command(cmd, dry_run=False, verbose=False):
     Run a command directly
     """
     if dry_run or verbose:
-        print(" ".join([shlex.quote(str(c)) for c in cmd]))
+        # tqdm.write keeps active progress bars intact
+        tqdm.write(" ".join([shlex.quote(str(c)) for c in cmd]))
         if dry_run:
             return None, None
 
